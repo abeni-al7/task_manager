@@ -8,11 +8,11 @@ import (
 
 var tasks []models.Task
 
-func GetTasks() []models.Task {
+func GetTasksService() []models.Task {
 	return tasks
 }
 
-func GetTask(id int) (models.Task, error) {
+func GetTaskService(id int) (models.Task, error) {
 	for _, task := range tasks {
 		if task.ID == id {
 			return task, nil
@@ -21,7 +21,7 @@ func GetTask(id int) (models.Task, error) {
 	return models.Task{}, errors.New("task not found")
 }
 
-func UpdateTask(id int, updatedTask *models.Task) error {
+func UpdateTaskService(id int, updatedTask *models.Task) error {
 	for i, task := range tasks {
 		if task.ID == id {
 			tasks[i].Title = updatedTask.Title
@@ -33,7 +33,7 @@ func UpdateTask(id int, updatedTask *models.Task) error {
 	return errors.New("task not found")
 }
 
-func RemoveTask(id int) error {
+func RemoveTaskService(id int) error {
 	for i, task := range tasks {
 		if task.ID == id {
 			tasks = append(tasks[:i], tasks[i+1:]...)
@@ -43,6 +43,6 @@ func RemoveTask(id int) error {
 	return errors.New("task not found")
 }
 
-func AddTask(newTask models.Task) {
+func AddTaskService(newTask models.Task) {
 	tasks = append(tasks, newTask)
 }
