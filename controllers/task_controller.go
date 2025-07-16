@@ -10,7 +10,7 @@ import (
 )
 
 func GetTasksController(ctx *gin.Context) {
-	ctx.JSON(http.StatusOK, data.GetTasksService())
+	ctx.JSON(http.StatusOK, gin.H{"tasks": data.GetTasksService()})
 }
 
 func GetTaskController(ctx *gin.Context) {
