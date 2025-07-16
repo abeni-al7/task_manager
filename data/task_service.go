@@ -21,16 +21,16 @@ func GetTaskService(id int) (models.Task, error) {
 	return models.Task{}, errors.New("task not found")
 }
 
-func UpdateTaskService(id int, updatedTask *models.Task) error {
+func UpdateTaskService(id int, updatedTask models.Task) (models.Task, error) {
 	for i, task := range tasks {
 		if task.ID == id {
 			tasks[i].Title = updatedTask.Title
 			tasks[i].Description = updatedTask.Description
 			tasks[i].Status = updatedTask.Status
-			return nil
+			return tasks[i], nil
 		}
 	}
-	return errors.New("task not found")
+	return models.Task{}, errors.New("task not found")
 }
 
 func RemoveTaskService(id int) error {
