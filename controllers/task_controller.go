@@ -75,6 +75,9 @@ func AddTaskController(ctx *gin.Context) {
 		return
 	}
 
-	task := data.AddTaskService(newTask)
+	task, err := data.AddTaskService(newTask)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, err.Error())
+	}
 	ctx.JSON(http.StatusCreated, task)
 }

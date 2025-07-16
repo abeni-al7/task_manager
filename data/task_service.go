@@ -24,9 +24,18 @@ func GetTaskService(id int) (models.Task, error) {
 func UpdateTaskService(id int, updatedTask models.Task) (models.Task, error) {
 	for i, task := range tasks {
 		if task.ID == id {
-			tasks[i].Title = updatedTask.Title
-			tasks[i].Description = updatedTask.Description
-			tasks[i].Status = updatedTask.Status
+			if updatedTask.Title != "" {
+				tasks[i].Title = updatedTask.Title
+			}
+			if updatedTask.Description != "" {
+				tasks[i].Description = updatedTask.Description
+			}
+			if updatedTask.Status != "" {
+				tasks[i].Status = updatedTask.Status	
+			}
+			if !updatedTask.DueDate.IsZero() {
+				tasks[i].DueDate = updatedTask.DueDate
+			}
 			return tasks[i], nil
 		}
 	}
@@ -43,7 +52,13 @@ func RemoveTaskService(id int) error {
 	return errors.New("task not found")
 }
 
-func AddTaskService(newTask models.Task) models.Task {
+func AddTaskService(newTask models.Task) (models.Task, error) {
+	id := newTask.ID
+	_, err := GetTaskService(id)
+	if err == nil {
+		return models.Task{}, errors.New("task with this id already exists")
+	}
+	
 	tasks = append(tasks, newTask)
-	return newTask
+	return newTask, nil
 }
