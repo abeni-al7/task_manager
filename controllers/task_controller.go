@@ -50,3 +50,19 @@ func UpdateTaskController(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, task)
 }
+
+func RemoveTaskCOntroller(ctx *gin.Context) {
+	idStr := ctx.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, "ID must be an integer")
+		return
+	}
+
+	err = data.RemoveTaskService(id)
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, err.Error())
+		return
+	}
+	ctx.JSON(http.StatusNoContent, nil)
+}
