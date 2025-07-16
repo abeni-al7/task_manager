@@ -2,11 +2,13 @@ package data
 
 import (
 	"errors"
+	"time"
 
 	"github.com/abeni-al7/task_manager/models"
 )
 
 var tasks []models.Task
+var lastId int = 0
 
 func GetTasksService() []models.Task {
 	return tasks
@@ -36,6 +38,7 @@ func UpdateTaskService(id int, updatedTask models.Task) (models.Task, error) {
 			if !updatedTask.DueDate.IsZero() {
 				tasks[i].DueDate = updatedTask.DueDate
 			}
+			tasks[i].UpdatedAt = time.Now()
 			return tasks[i], nil
 		}
 	}
@@ -52,13 +55,13 @@ func RemoveTaskService(id int) error {
 	return errors.New("task not found")
 }
 
-func AddTaskService(newTask models.Task) (models.Task, error) {
-	id := newTask.ID
-	_, err := GetTaskService(id)
-	if err == nil {
-		return models.Task{}, errors.New("task with this id already exists")
-	}
-	
+func AddTaskService(newTask models.Task) models.Task {
+	id := lastId + 1
+	lastId++
+	newTask.ID = id
+	newTask.CreatedAt = time.Now()
+	newTask.UpdatedAt = time.Now()
+
 	tasks = append(tasks, newTask)
-	return newTask, nil
+	return newTask
 }
