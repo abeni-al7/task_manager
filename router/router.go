@@ -12,7 +12,7 @@ func Init() {
 	router.GET("/tasks/:id", controllers.GetTaskController)
 	router.PUT("/tasks/:id", controllers.UpdateTaskController)
 	router.DELETE("/tasks/:id", controllers.RemoveTaskController)
-	router.POST("/tasks/:id", controllers.AddTaskController)
+	router.POST("/tasks/", controllers.AddTaskController)
 
 	router.Run("localhost:8080")
 }
