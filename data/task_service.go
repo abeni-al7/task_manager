@@ -43,6 +43,7 @@ func RemoveTaskService(id int) error {
 	return errors.New("task not found")
 }
 
-func AddTaskService(newTask models.Task) {
+func AddTaskService(newTask models.Task) models.Task {
 	tasks = append(tasks, newTask)
+	return newTask
 }
