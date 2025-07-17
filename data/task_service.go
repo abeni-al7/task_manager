@@ -71,24 +71,26 @@ func UpdateTaskService(id primitive.ObjectID, updatedTask models.Task) (models.T
 	var task models.Task
 	filter := bson.D{{Key: "_id", Value: id}}
 
-	update := bson.D{{}}
+	fields := bson.D{}
 	if updatedTask.Title != "" {
-		update = append(update, bson.E{Key: "title", Value: updatedTask.Title})
+		fields = append(fields, bson.E{Key: "title", Value: updatedTask.Title})
 	}
 	if updatedTask.Description != "" {
-		update = append(update, bson.E{Key: "description", Value: updatedTask.Description})
+		fields = append(fields, bson.E{Key: "description", Value: updatedTask.Description})
 	}
 	if !time.Time.IsZero(updatedTask.DueDate) {
-		update = append(update, bson.E{Key: "due_date", Value: updatedTask.DueDate})
+		fields = append(fields, bson.E{Key: "due_date", Value: updatedTask.DueDate})
 	}
 	if updatedTask.Status != "" {
-		update = append(update, bson.E{Key: "status", Value: updatedTask.Status})
+		fields = append(fields, bson.E{Key: "status", Value: updatedTask.Status})
 	}
-	update = append(update, bson.E{Key: "updated_at", Value: time.Now()})
+	fields = append(fields, bson.E{Key: "updated_at", Value: time.Now()})
+
+	update := bson.D{{Key: "$set", Value: fields}}
 
 	_, err := collection.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
-		return models.Task{}, errors.New("task not found")
+		return models.Task{}, errors.New(err.Error())
 	}
 	
 	err = collection.FindOne(context.TODO(), filter).Decode(&task)
@@ -110,12 +112,13 @@ func RemoveTaskService(id primitive.ObjectID) error {
 }
 
 func AddTaskService(newTask models.Task) (models.Task, error) {
+	newTask.ID = primitive.NewObjectID()
 	newTask.CreatedAt = time.Now()
 	newTask.UpdatedAt = time.Now()
 
 	_, err := collection.InsertOne(context.TODO(), newTask)
 	if err != nil {
-		return models.Task{}, errors.New("cannot insert task")
+		return models.Task{}, errors.New(err.Error())
 	}
 	return newTask, nil
 }

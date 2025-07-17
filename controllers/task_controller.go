@@ -43,12 +43,19 @@ func UpdateTaskController(ctx *gin.Context) {
 	idStr := ctx.Param("id")
 	id, err := primitive.ObjectIDFromHex(idStr)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, "ID must be an integer")
+		ctx.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
 
 	if err := ctx.ShouldBindJSON(&updatedTask); err != nil {
 		ctx.JSON(http.StatusBadRequest, "Not a valid Task")
+		return
+	}
+
+	status := updatedTask.Status
+	if status != "completed" && status != "in-progress" &&
+	status != "pending" && status != "canceled" {
+		ctx.JSON(http.StatusBadRequest, "Invalid status")
 		return
 	}
 
@@ -79,18 +86,25 @@ func RemoveTaskController(ctx *gin.Context) {
 
 func AddTaskController(ctx *gin.Context) {
 	var newTask models.Task
-
+	
 	if err := ctx.ShouldBindJSON(&newTask); err != nil {
 		ctx.JSON(http.StatusBadRequest, "Invalid task")
 		return
 	}
-
+	
 	if newTask.Title == "" || newTask.Description == "" || 
 	time.Time.IsZero(newTask.DueDate) || newTask.Status == "" {
 		ctx.JSON(http.StatusBadRequest, "Missing required fields")
 		return
 	}
 
+	status := newTask.Status
+	if status != "completed" && status != "in-progress" &&
+	status != "pending" && status != "canceled" {
+		ctx.JSON(http.StatusBadRequest, "Invalid status")
+		return
+	}
+	
 	task, err := data.AddTaskService(newTask)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, err.Error())
