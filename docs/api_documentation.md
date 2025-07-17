@@ -1,4 +1,4 @@
-# Task Manager API
+# Task Manager API Documentation
 This is an API to perform basic CRUD operations on an in-memory task list.
 
 It allows clients to

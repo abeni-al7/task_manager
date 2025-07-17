@@ -1,6 +1,8 @@
 package router
 
 import (
+	"os"
+
 	"github.com/abeni-al7/task_manager/controllers"
 	"github.com/gin-gonic/gin"
 )
@@ -14,5 +16,5 @@ func Init() {
 	router.DELETE("/tasks/:id", controllers.RemoveTaskController)
 	router.POST("/tasks/", controllers.AddTaskController)
 
-	router.Run("localhost:8080")
+	router.Run(os.Getenv("HOST_URL"))
 }

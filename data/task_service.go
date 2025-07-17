@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"os"
 	"time"
 
 	"github.com/abeni-al7/task_manager/models"
@@ -15,7 +16,7 @@ import (
 var collection *mongo.Collection
 
 func ConnectToMongoDB() {
-	mongoClientOptions := options.Client().ApplyURI("mongodb://localhost:27017")
+	mongoClientOptions := options.Client().ApplyURI(os.Getenv("MONGODB_URI"))
 
 	mongoClient, err := mongo.Connect(context.TODO(), mongoClientOptions)
 	if err != nil {
