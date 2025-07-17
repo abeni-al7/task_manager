@@ -1,5 +1,6 @@
-# Task Manager API Documentation
-This is an API to perform basic CRUD operations on an in-memory task list.
+# Task Manager API
+This is an API to perform basic CRUD operations on a task list with persistent data storage
+utilizing MongoDB.
 
 It allows clients to
 
@@ -13,7 +14,36 @@ It allows clients to
 
 - Delete tasks
 
-## GET Tasks
+## Prerequisites
+- Golang version 1.24.5 or later
+- MongoDB version 8.0.11 or later
+
+## Dependencies
+- github.com/gin-gonic/gin - The Gin Framework
+- github.com/joho/godotenv - Godotenv for environment variable management
+- go.mongodb.org/mongo-driver - MongoDB driver for Go
+
+## Usage
+1. Clone the github repository
+```
+git clone https://github.com/abeni-al7/task_manager
+```
+2. Get into the directory
+```
+cd task_manager
+```
+3. Configure environment variables with your database URI and HOST URL
+```
+mv .env.example .env
+```
+Get into .env and edit the default values with your own credentials
+3. Run the server 
+```
+go run main.go
+```
+
+## Task Manager API Documentation
+### GET Tasks
 ### http://localhost:8080/tasks/
 
 #### Example Request
@@ -23,7 +53,7 @@ It allows clients to
 {
   "tasks": [
     {
-      "id": 1,
+      "id": "6878eb6ddfbd2f90f0d2c60a",
       "title": "not urgent",
       "description": "good but far",
       "due_date": "2025-12-16T08:30:00Z",
@@ -35,17 +65,17 @@ It allows clients to
 }
 ```
 
-## GET Task
+### GET Task
 ### http://localhost:8080/tasks/:id
 
 #### Example Request
 ```
-curl --location 'http://localhost:8080/tasks/1'
+curl --location 'http://localhost:8080/tasks/6878eb6ddfbd2f90f0d2c60a'
 ```
 #### Example Response
 ```
 {
-  "id": 1,
+  "id": "6878eb6ddfbd2f90f0d2c60a"1,
   "title": "not urgent",
   "description": "good but far",
   "due_date": "2025-12-16T08:30:00Z",
@@ -55,12 +85,12 @@ curl --location 'http://localhost:8080/tasks/1'
 }
 ```
 
-## PUT Task
+### PUT Task
 ### http://localhost:8080/tasks/:id
 
 #### Example Request
 ```
-curl --location --request PUT 'http://localhost:8080/tasks/1' \
+curl --location --request PUT 'http://localhost:8080/tasks/6878eb6ddfbd2f90f0d2c60a' \
 --data '{
     "title": "Updated Title",
     "status": "completed"
@@ -69,7 +99,7 @@ curl --location --request PUT 'http://localhost:8080/tasks/1' \
 #### Example Response
 ```
 {
-  "id": 1,
+  "id": "6878eb6ddfbd2f90f0d2c60a",
   "title": "Updated Title",
   "description": "good but far",
   "due_date": "2025-12-16T08:30:00Z",
@@ -79,7 +109,7 @@ curl --location --request PUT 'http://localhost:8080/tasks/1' \
 }
 ```
 
-## POST Task
+### POST Task
 ### http://localhost:8080/tasks/:id
 
 #### Example Request
@@ -95,7 +125,7 @@ curl --location 'http://localhost:8080/tasks/' \
 #### Example Response
 ```
 {
-  "id": 1,
+  "id": "6878eb6ddfbd2f90f0d2c60a",
   "title": "Updated Title",
   "description": "good but far",
   "due_date": "2025-12-16T08:30:00Z",
@@ -105,12 +135,12 @@ curl --location 'http://localhost:8080/tasks/' \
 }
 ```
 
-## DELETE Task
+### DELETE Task
 ### http://localhost:8080/tasks/:id
 
 #### Example Request
 ```
-curl --location --request DELETE 'http://localhost:8080/tasks/1'
+curl --location --request DELETE 'http://localhost:8080/tasks/6878eb6ddfbd2f90f0d2c60a'
 ```
 #### Example Response
 ```
