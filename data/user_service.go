@@ -207,6 +207,7 @@ func LoginUserService(email string, password string) (string, error) {
 		"email": user.Email,
 		"first_name": user.FirstName,
 		"last_name": user.LastName,
+		"role": user.Role,
 	})
 
 	jwtToken, err := token.SignedString(os.Getenv("JWT_SECRET"))
