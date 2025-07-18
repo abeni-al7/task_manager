@@ -13,7 +13,7 @@ import (
 func GetTasksController(ctx *gin.Context) {
 	tasks, err := data.GetTasksService()
 	if err != nil {
-		ctx.JSON(http.StatusNotFound, err.Error())
+		ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{"tasks": tasks})
@@ -24,13 +24,13 @@ func GetTaskController(ctx *gin.Context) {
 
 	id, err := primitive.ObjectIDFromHex(idStr)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, err.Error())
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	task, err := data.GetTaskService(id)
 	if err != nil {
-		ctx.JSON(http.StatusNotFound, err.Error())
+		ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -43,25 +43,25 @@ func UpdateTaskController(ctx *gin.Context) {
 	idStr := ctx.Param("id")
 	id, err := primitive.ObjectIDFromHex(idStr)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, err.Error())
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	if err := ctx.ShouldBindJSON(&updatedTask); err != nil {
-		ctx.JSON(http.StatusBadRequest, "Not a valid Task")
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	status := updatedTask.Status
 	if status != "completed" && status != "in-progress" &&
 	status != "pending" && status != "canceled" {
-		ctx.JSON(http.StatusBadRequest, "Invalid status")
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	task, err := data.UpdateTaskService(id, updatedTask)
 	if err != nil {
-		ctx.JSON(http.StatusNotFound, err.Error())
+		ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
 	ctx.JSON(http.StatusOK, task)
@@ -71,13 +71,13 @@ func RemoveTaskController(ctx *gin.Context) {
 	idStr := ctx.Param("id")
 	id, err := primitive.ObjectIDFromHex(idStr)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, "ID must be an integer")
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	err = data.RemoveTaskService(id)
 	if err != nil {
-		ctx.JSON(http.StatusNotFound, err.Error())
+		ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
 
