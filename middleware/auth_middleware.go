@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"os"
 	"strings"
@@ -75,7 +74,6 @@ func IsOwnerMiddleware() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		id := ctx.Param("id")
 		userID, ok := ctx.Get("user_id")
-		fmt.Println(userID, id)
 
 		if !ok || userID != id {
 			ctx.JSON(http.StatusForbidden, gin.H{"error": "unauthorized to access this route"})
