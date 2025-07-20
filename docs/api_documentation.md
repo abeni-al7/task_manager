@@ -146,3 +146,113 @@ curl --location --request DELETE 'http://localhost:8080/tasks/6878eb6ddfbd2f90f0
 ```
 Status code: 204
 ```
+
+### GET Users
+### http://localhost:8080/users/
+
+#### Example Request
+```curl --location 'http://localhost:8080/users/'```
+#### Example Response
+```
+{
+    "users": [
+        {
+            "id": "687ce54433fd48459614ca4e",
+            "username": "heisenberg",
+            "role": "admin",
+            "email": "abebe@abeb.co",
+            "created_at": "2025-07-20T12:47:00.633Z",
+            "updated_at": "2025-07-20T12:47:00.633Z"
+        },
+        {
+            "id": "687ce5ab33fd48459614ca4f",
+            "username": "joe",
+            "role": "regular",
+            "email": "abebe@abeb.co",
+            "created_at": "2025-07-20T12:48:43.095Z",
+            "updated_at": "2025-07-20T12:48:43.095Z"
+        }
+    ]
+}
+```
+
+### GET User
+### http://localhost:8080/users/:id
+
+#### Example Request
+```
+curl --location 'http://localhost:8080/users/6878eb6ddfbd2f90f0d2c60a'
+```
+#### Example Response
+```
+{
+    "id": "687ce5ab33fd48459614ca4f",
+    "username": "joe",
+    "role": "regular",
+    "email": "abebe@abeb.co",
+    "created_at": "2025-07-20T12:48:43.095Z",
+    "updated_at": "2025-07-20T12:48:43.095Z"
+}
+```
+
+### PUT User
+### http://localhost:8080/users/:id
+
+#### Example Request
+```
+curl --location --request PUT 'http://localhost:8080/users/6878eb6ddfbd2f90f0d2c60a' \
+--data '{
+    "email": "updated@email.co",
+    "username": "completed"
+}'
+```
+#### Example Response
+```
+{
+  "id": "6878eb6ddfbd2f90f0d2c60a",
+  "title": "Updated Title",
+  "description": "good but far",
+  "due_date": "2025-12-16T08:30:00Z",
+  "status": "completed",
+  "CreatedAt": "2025-07-16T11:51:41.028011851+03:00",
+  "UpdatedAt": "2025-07-16T14:36:57.945307958+03:00"
+}
+```
+
+### POST Task
+### http://localhost:8080/tasks/:id
+
+#### Example Request
+```
+curl --location 'http://localhost:8080/tasks/' \
+--data '{
+    "title": "not urgent",
+    "description": "good but far",
+    "due_date": "2025-12-16T08:30:00Z",
+    "status": "pending"
+}'
+```
+#### Example Response
+```
+{
+  "id": "6878eb6ddfbd2f90f0d2c60a",
+  "title": "Updated Title",
+  "description": "good but far",
+  "due_date": "2025-12-16T08:30:00Z",
+  "status": "completed",
+  "CreatedAt": "2025-07-16T11:51:41.028011851+03:00",
+  "UpdatedAt": "2025-07-16T14:36:57.945307958+03:00"
+}
+```
+
+### DELETE Task
+### http://localhost:8080/tasks/:id
+
+#### Example Request
+```
+curl --location --request DELETE 'http://localhost:8080/tasks/6878eb6ddfbd2f90f0d2c60a'
+```
+#### Example Response
+```
+Status code: 204
+```

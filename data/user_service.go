@@ -57,9 +57,6 @@ func UpdateUserService(id primitive.ObjectID, updatedUser models.User) (models.U
 	filter := bson.D{{Key: "_id", Value: id}}
 
 	fields := bson.D{}
-	if updatedUser.Username != "" {
-		fields = append(fields, bson.E{Key: "username", Value: updatedUser.Username})
-	}
 	if updatedUser.Email != "" {
 		fields = append(fields, bson.E{Key: "email", Value: updatedUser.Email})
 	}
