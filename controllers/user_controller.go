@@ -136,8 +136,7 @@ func RegisterUserController(ctx *gin.Context) {
 		return
 	}
 	
-	if newUser.FirstName == "" || newUser.LastName == "" || 
-	newUser.Email == "" {
+	if newUser.Username == "" || newUser.Email == "" {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Missing required fields"})
 		return
 	}

@@ -55,7 +55,7 @@ func UpdateTaskController(ctx *gin.Context) {
 	status := updatedTask.Status
 	if status != "completed" && status != "in-progress" &&
 	status != "pending" && status != "canceled" {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid task status value"})
 		return
 	}
 

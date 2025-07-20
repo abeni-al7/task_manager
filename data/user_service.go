@@ -57,11 +57,11 @@ func UpdateUserService(id primitive.ObjectID, updatedUser models.User) (models.U
 	filter := bson.D{{Key: "_id", Value: id}}
 
 	fields := bson.D{}
-	if updatedUser.FirstName != "" {
-		fields = append(fields, bson.E{Key: "first_name", Value: updatedUser.FirstName})
+	if updatedUser.Username != "" {
+		fields = append(fields, bson.E{Key: "username", Value: updatedUser.Username})
 	}
-	if updatedUser.LastName != "" {
-		fields = append(fields, bson.E{Key: "last_name", Value: updatedUser.LastName})
+	if updatedUser.Email != "" {
+		fields = append(fields, bson.E{Key: "email", Value: updatedUser.Email})
 	}
 	fields = append(fields, bson.E{Key: "updated_at", Value: time.Now()})
 
@@ -74,7 +74,7 @@ func UpdateUserService(id primitive.ObjectID, updatedUser models.User) (models.U
 	
 	err = UserCollection.FindOne(context.TODO(), filter).Decode(&user)
 	if err != nil {
-		return models.User{}, errors.New("task not found")
+		return models.User{}, errors.New(err.Error())
 	}
 	return user, nil
 }
@@ -157,7 +157,7 @@ func RegisterUserService(newUser models.User) (models.User, error) {
 
 	err := UserCollection.FindOne(context.TODO(), bson.D{{Key: "email", Value: newUser.Email}}).Decode(&existingUser)
 
-	if err != nil {
+	if err == nil {
 		return models.User{}, errors.New("user already exists")
 	}
 
@@ -205,9 +205,9 @@ func LoginUserService(email string, password string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"user_id": user.ID,
 		"email": user.Email,
-		"first_name": user.FirstName,
-		"last_name": user.LastName,
+		"username": user.Username,
 		"role": user.Role,
+		"exp": time.Now().Add(time.Hour * 24).Unix(),
 	})
 
 	jwtToken, err := token.SignedString(os.Getenv("JWT_SECRET"))
