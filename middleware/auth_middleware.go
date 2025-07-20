@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"os"
 	"strings"
@@ -31,7 +32,7 @@ func AuthMiddleware() gin.HandlerFunc {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, errors.New("invalid token")
 			}
-			return os.Getenv("JWT_SECRET"), nil
+			return []byte(os.Getenv("JWT_SECRET")), nil
 		})
 
 		if err != nil || !token.Valid {
@@ -74,6 +75,7 @@ func IsOwnerMiddleware() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		id := ctx.Param("id")
 		userID, ok := ctx.Get("user_id")
+		fmt.Println(userID, id)
 
 		if !ok || userID != id {
 			ctx.JSON(http.StatusForbidden, gin.H{"error": "unauthorized to access this route"})

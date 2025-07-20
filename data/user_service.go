@@ -155,7 +155,7 @@ func RemoveUserService(id primitive.ObjectID) error {
 func RegisterUserService(newUser models.User) (models.User, error) {
 	var existingUser models.User
 
-	err := UserCollection.FindOne(context.TODO(), bson.D{{Key: "email", Value: newUser.Email}}).Decode(&existingUser)
+	err := UserCollection.FindOne(context.TODO(), bson.D{{Key: "username", Value: newUser.Username}}).Decode(&existingUser)
 
 	if err == nil {
 		return models.User{}, errors.New("user already exists")
@@ -190,16 +190,16 @@ func RegisterUserService(newUser models.User) (models.User, error) {
 	return newUser, nil
 }
 
-func LoginUserService(email string, password string) (string, error) {
+func LoginUserService(username string, password string) (string, error) {
 	var user models.User
 
-	err := UserCollection.FindOne(context.TODO(), bson.D{{Key: "email", Value: email}}).Decode(&user)
+	err := UserCollection.FindOne(context.TODO(), bson.D{{Key: "username", Value: username}}).Decode(&user)
 	if err != nil {
-		return "", errors.New("invalid email or password")
+		return "", errors.New("invalid username or password")
 	}
 
 	if bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)) != nil {
-		return "", errors.New("invalid email or password")
+		return "", errors.New("invalid username or password")
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
@@ -210,9 +210,9 @@ func LoginUserService(email string, password string) (string, error) {
 		"exp": time.Now().Add(time.Hour * 24).Unix(),
 	})
 
-	jwtToken, err := token.SignedString(os.Getenv("JWT_SECRET"))
+	jwtToken, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 	if err != nil {
-		return "", errors.New("unable to generate token")
+		return "", errors.New(err.Error())
 	}
 
 	return jwtToken, nil

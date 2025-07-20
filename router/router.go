@@ -22,7 +22,7 @@ func Init() {
 	router.PUT("/users/:id", middleware.AuthMiddleware(), middleware.IsOwnerMiddleware(), controllers.UpdateUserController)
 	router.PUT("/users/:id/change-password", middleware.AuthMiddleware(), middleware.IsOwnerMiddleware(), controllers.ChangePasswordController)
 	router.PUT("/promote/:id", middleware.AuthMiddleware(), middleware.IsAdminMiddleware(), controllers.PromoteUserController)
-	router.DELETE("/users/:id", middleware.IsAdminMiddleware(), controllers.RemoveUserController)
+	router.DELETE("/users/:id", middleware.AuthMiddleware(), middleware.IsAdminMiddleware(), controllers.RemoveUserController)
 	router.POST("/register", controllers.RegisterUserController)
 	router.POST("/login", controllers.LoginUserController)
 

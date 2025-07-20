@@ -129,19 +129,30 @@ func RemoveUserController(ctx *gin.Context) {
 }
 
 func RegisterUserController(ctx *gin.Context) {
-	var newUser models.User
+	type RegisterUserInput struct {
+		Username string `json:"username"`
+		Email string `json:"email"`
+		Password string `json:"password"`
+	}
+	var newUser RegisterUserInput
 	
 	if err := ctx.ShouldBindJSON(&newUser); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	
-	if newUser.Username == "" || newUser.Email == "" {
+	if newUser.Username == "" || newUser.Email == "" || newUser.Password == "" {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Missing required fields"})
 		return
 	}
+
+	userToRegister := models.User{
+		Username: newUser.Username,
+		Password: newUser.Password,
+		Email: newUser.Email,
+	}
 	
-	user, err := data.RegisterUserService(newUser)
+	user, err := data.RegisterUserService(userToRegister)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, err.Error())
 	}
@@ -156,9 +167,9 @@ func LoginUserController(ctx *gin.Context) {
 		return
 	}
 
-	email, ok := body["email"].(string)
+	username, ok := body["username"].(string)
 	if !ok {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "email is required"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "username is required"})
 		return
 	}
 
@@ -168,7 +179,7 @@ func LoginUserController(ctx *gin.Context) {
 		return
 	}
 
-	token, err := data.LoginUserService(email, password)
+	token, err := data.LoginUserService(username, password)
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
