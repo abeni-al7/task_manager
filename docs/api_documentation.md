@@ -43,7 +43,9 @@ go run main.go
 ```
 
 ## Task Manager API Documentation
-### GET Tasks
+For the APIs which are protected, use "bearer xxxxxxxxxxxx" on the authorization header with your JWT token which expires after 24 hours and need to be generated vial login.
+
+### GET Tasks (open for all users)
 ### http://localhost:8080/tasks/
 
 #### Example Request
@@ -65,7 +67,7 @@ go run main.go
 }
 ```
 
-### GET Task
+### GET Task (open for all users)
 ### http://localhost:8080/tasks/:id
 
 #### Example Request
@@ -85,7 +87,7 @@ curl --location 'http://localhost:8080/tasks/6878eb6ddfbd2f90f0d2c60a'
 }
 ```
 
-### PUT Task
+### PUT Task (admin previledge)
 ### http://localhost:8080/tasks/:id
 
 #### Example Request
@@ -109,7 +111,7 @@ curl --location --request PUT 'http://localhost:8080/tasks/6878eb6ddfbd2f90f0d2c
 }
 ```
 
-### POST Task
+### POST Task (admin previledge)
 ### http://localhost:8080/tasks/:id
 
 #### Example Request
@@ -135,7 +137,7 @@ curl --location 'http://localhost:8080/tasks/' \
 }
 ```
 
-### DELETE Task
+### DELETE Task (admin previledge)
 ### http://localhost:8080/tasks/:id
 
 #### Example Request
@@ -147,7 +149,7 @@ curl --location --request DELETE 'http://localhost:8080/tasks/6878eb6ddfbd2f90f0
 Status code: 204
 ```
 
-### GET Users
+### GET Users (admin previledge)
 ### http://localhost:8080/users/
 
 #### Example Request
@@ -176,7 +178,7 @@ Status code: 204
 }
 ```
 
-### GET User
+### GET User (account owner previledge)
 ### http://localhost:8080/users/:id
 
 #### Example Request
@@ -186,7 +188,7 @@ curl --location 'http://localhost:8080/users/6878eb6ddfbd2f90f0d2c60a'
 #### Example Response
 ```
 {
-    "id": "687ce5ab33fd48459614ca4f",
+    "id": "6878eb6ddfbd2f90f0d2c60a",
     "username": "joe",
     "role": "regular",
     "email": "abebe@abeb.co",
@@ -195,7 +197,7 @@ curl --location 'http://localhost:8080/users/6878eb6ddfbd2f90f0d2c60a'
 }
 ```
 
-### PUT User
+### PUT User (account owner previledge)
 ### http://localhost:8080/users/:id
 
 #### Example Request
@@ -203,54 +205,103 @@ curl --location 'http://localhost:8080/users/6878eb6ddfbd2f90f0d2c60a'
 curl --location --request PUT 'http://localhost:8080/users/6878eb6ddfbd2f90f0d2c60a' \
 --data '{
     "email": "updated@email.co",
-    "username": "completed"
 }'
 ```
 #### Example Response
 ```
 {
-  "id": "6878eb6ddfbd2f90f0d2c60a",
-  "title": "Updated Title",
-  "description": "good but far",
-  "due_date": "2025-12-16T08:30:00Z",
-  "status": "completed",
-  "CreatedAt": "2025-07-16T11:51:41.028011851+03:00",
-  "UpdatedAt": "2025-07-16T14:36:57.945307958+03:00"
+    "id": "6878eb6ddfbd2f90f0d2c60a",
+    "username": "heisenberg",
+    "role": "admin",
+    "email": "h@h.co",
+    "created_at": "2025-07-20T12:47:00.633Z",
+    "updated_at": "2025-07-20T13:08:48.492Z"
 }
 ```
 
-### POST Task
-### http://localhost:8080/tasks/:id
+### POST Login (anyone can access this one)
+### http://localhost:8080/login
 
 #### Example Request
 ```
-curl --location 'http://localhost:8080/tasks/' \
+curl --location 'http://localhost:8080/login/' \
 --data '{
-    "title": "not urgent",
-    "description": "good but far",
-    "due_date": "2025-12-16T08:30:00Z",
-    "status": "pending"
+    "username": "heisenberg",
+    "password": "testpass"
 }'
 ```
 #### Example Response
 ```
 {
-  "id": "6878eb6ddfbd2f90f0d2c60a",
-  "title": "Updated Title",
-  "description": "good but far",
-  "due_date": "2025-12-16T08:30:00Z",
-  "status": "completed",
-  "CreatedAt": "2025-07-16T11:51:41.028011851+03:00",
-  "UpdatedAt": "2025-07-16T14:36:57.945307958+03:00"
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFiZWJlQGFiZWIuY28iLCJleHAiOjE3NTMxMDI1MDAsInJvbGUiOiJhZG1pbiIsInVzZXJfaWQiOiI2ODdjZTU0NDMzZmQ0ODQ1OTYxNGNhNGUiLCJ1c2VybmFtZSI6ImhlaXNlbmJlcmcifQ.jRKtw8UG0jNT20Yf4wjZS9kQTo9-WAEfSH4kmxXXI_M"
 }
 ```
 
-### DELETE Task
-### http://localhost:8080/tasks/:id
+### POST Register (anyone can access this one)
+### http://localhost:8080/register
 
 #### Example Request
 ```
-curl --location --request DELETE 'http://localhost:8080/tasks/6878eb6ddfbd2f90f0d2c60a'
+curl --location 'http://localhost:8080/register/' \
+--data '{
+    "username": "heisenberg",
+    "email": "h@h.co",
+    "password": "testpass"
+}'
+```
+#### Example Response
+```
+{
+    "id": "687ce5ab33fd48459614ca4f",
+    "username": "heisenberg",
+    "role": "regular", // the first to register is an admin
+    "email": "h@h.co",
+    "created_at": "2025-07-20T15:48:43.095064617+03:00",
+    "updated_at": "2025-07-20T15:48:43.095064663+03:00"
+}
+```
+
+### POST Promote (admin previledge)
+### http://localhost:8080/promote/:id
+
+#### Example Request
+```
+curl --location 'http://localhost:8080/promote/687ce5ab33fd48459614ca4f' \
+```
+#### Example Response
+```
+{
+    "id": "687ce5ab33fd48459614ca4f",
+    "username": "heisenberg",
+    "role": "admin", // promoted
+    "email": "h@h.co",
+    "created_at": "2025-07-20T15:48:43.095064617+03:00",
+    "updated_at": "2025-07-20T15:48:43.095064663+03:00"
+}
+```
+
+### POST Change-Password (account owner previledge)
+### http://localhost:8080/change-password/:id
+
+#### Example Request
+```
+curl --location 'http://localhost:8080/687ce5ab33fd48459614ca4f/change-password' \
+--data '{
+    "prev_password": "test",
+    "new_password": "mytpass",
+}'
+```
+#### Example Response
+```
+{"message":"password updated successfully"}
+```
+
+### DELETE User (admin previledge)
+### http://localhost:8080/users/:id
+
+#### Example Request
+```
+curl --location --request DELETE 'http://localhost:8080/users/6878eb6ddfbd2f90f0d2c60a'
 ```
 #### Example Response
 ```
