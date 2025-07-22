@@ -25,16 +25,12 @@ type TaskRepository struct {
 	collection string
 }
 
-func (tr *TaskRepository) Create(task *domain.Task) (domain.Task, error) {
-	task.ID = primitive.NewObjectID()
-	task.CreatedAt = time.Now()
-	task.UpdatedAt = time.Now()
-
+func (tr *TaskRepository) Create(task *domain.Task) (*domain.Task, error) {
 	_, err :=tr.database.Collection(tr.collection).InsertOne(context.TODO(), task)
 	if err != nil {
-		return domain.Task{}, errors.New(err.Error())
+		return &domain.Task{}, errors.New("cannot insert task to database")
 	}
-	return *task, nil
+	return task, nil
 }
 
 func (tr *TaskRepository) FetchAll() ([]domain.Task, error) {
@@ -45,16 +41,8 @@ func (tr *TaskRepository) FetchAll() ([]domain.Task, error) {
 		return []domain.Task{}, errors.New("cannot retrieve tasks")
 	}
 
-	for cur.Next(context.TODO()) {
-		var task domain.Task
-		err := cur.Decode(&task)
-		if err != nil {
-			return []domain.Task{}, errors.New("cannot retrieve tasks")
-		}
-		tasks = append(tasks, task)
-	}
-
-	if err := cur.Err(); err != nil {
+	err = cur.All(context.TODO(), tasks)
+	if err != nil {
 		return []domain.Task{}, errors.New("cannot retrieve tasks")
 	}
 

@@ -2,16 +2,34 @@ package controllers
 
 import (
 	"net/http"
-	"time"
 
-	"github.com/abeni-al7/task_manager/data"
 	"github.com/abeni-al7/task_manager/Domain"
+	"github.com/abeni-al7/task_manager/Usecases"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func GetTasksController(ctx *gin.Context) {
-	tasks, err := data.GetTasksService()
+type TaskController struct {
+	taskUsecase usecases.TaskUsecase
+}
+
+func (tc *TaskController) Create(ctx *gin.Context) {
+	var newTask domain.Task
+	
+	if err := ctx.ShouldBindJSON(&newTask); err != nil {
+		ctx.JSON(http.StatusBadRequest, "Invalid task")
+		return
+	}
+	
+	task, err := tc.taskUsecase.Create(&newTask)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, err.Error())
+	}
+	ctx.JSON(http.StatusCreated, task)
+}
+
+func (tc *TaskController) FetchAll(ctx *gin.Context) {
+	tasks, err := tc.taskUsecase.FetchAll()
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -19,7 +37,7 @@ func GetTasksController(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"tasks": tasks})
 }
 
-func GetTaskController(ctx *gin.Context) {
+func (tc *TaskController) Fetch(ctx *gin.Context) {
 	idStr := ctx.Param("id")
 
 	id, err := primitive.ObjectIDFromHex(idStr)
@@ -28,7 +46,7 @@ func GetTaskController(ctx *gin.Context) {
 		return
 	}
 
-	task, err := data.GetTaskService(id)
+	task, err := tc.taskUsecase.Fetch(id)
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -37,7 +55,7 @@ func GetTaskController(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, task)
 }
 
-func UpdateTaskController(ctx *gin.Context) {
+func (tc *TaskController) Update(ctx *gin.Context) {
 	var updatedTask domain.Task
 
 	idStr := ctx.Param("id")
@@ -52,14 +70,7 @@ func UpdateTaskController(ctx *gin.Context) {
 		return
 	}
 
-	status := updatedTask.Status
-	if status != "completed" && status != "in-progress" &&
-	status != "pending" && status != "canceled" {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid task status value"})
-		return
-	}
-
-	task, err := data.UpdateTaskService(id, updatedTask)
+	task, err := tc.taskUsecase.Update(id, updatedTask)
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -67,7 +78,7 @@ func UpdateTaskController(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, task)
 }
 
-func RemoveTaskController(ctx *gin.Context) {
+func (tc *TaskController) Remove(ctx *gin.Context) {
 	idStr := ctx.Param("id")
 	id, err := primitive.ObjectIDFromHex(idStr)
 	if err != nil {
@@ -75,39 +86,11 @@ func RemoveTaskController(ctx *gin.Context) {
 		return
 	}
 
-	err = data.RemoveTaskService(id)
+	err = tc.taskUsecase.Remove(id)
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
 
 	ctx.JSON(http.StatusNoContent, nil)
-}
-
-func AddTaskController(ctx *gin.Context) {
-	var newTask domain.Task
-	
-	if err := ctx.ShouldBindJSON(&newTask); err != nil {
-		ctx.JSON(http.StatusBadRequest, "Invalid task")
-		return
-	}
-	
-	if newTask.Title == "" || newTask.Description == "" || 
-	time.Time.IsZero(newTask.DueDate) || newTask.Status == "" {
-		ctx.JSON(http.StatusBadRequest, "Missing required fields")
-		return
-	}
-
-	status := newTask.Status
-	if status != "completed" && status != "in-progress" &&
-	status != "pending" && status != "canceled" {
-		ctx.JSON(http.StatusBadRequest, "Invalid status")
-		return
-	}
-	
-	task, err := data.AddTaskService(newTask)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, err.Error())
-	}
-	ctx.JSON(http.StatusCreated, task)
 }

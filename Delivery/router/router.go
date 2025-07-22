@@ -13,7 +13,7 @@ func Init() *gin.Engine {
 	router.GET("/tasks/:id", infrastructure.AuthMiddleware(), controllers.GetTaskController)
 	router.PUT("/tasks/:id", infrastructure.AuthMiddleware(), infrastructure.IsAdminMiddleware(), controllers.UpdateTaskController)
 	router.DELETE("/tasks/:id", infrastructure.AuthMiddleware(), infrastructure.IsAdminMiddleware(), controllers.RemoveTaskController)
-	router.POST("/tasks/", infrastructure.AuthMiddleware(), infrastructure.IsAdminMiddleware(), controllers.AddTaskController)
+	router.POST("/tasks/", infrastructure.AuthMiddleware(), infrastructure.IsAdminMiddleware(), controllers.Create())
 
 	router.GET("/users", infrastructure.AuthMiddleware(), infrastructure.IsAdminMiddleware(), controllers.GetUsersController)
 	router.GET("/users/:id", infrastructure.AuthMiddleware(), infrastructure.IsOwnerMiddleware(), controllers.GetUserController)

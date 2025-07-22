@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/abeni-al7/task_manager/Domain"
-	infrastructure "github.com/abeni-al7/task_manager/Infrastructure"
+	"github.com/abeni-al7/task_manager/Infrastructure"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -110,16 +110,8 @@ func (ur *UserRepository) FetchAll() ([]domain.User, error) {
 		return []domain.User{}, errors.New("cannot retrieve users")
 	}
 
-	for cur.Next(context.TODO()) {
-		var user domain.User
-		err := cur.Decode(&user)
-		if err != nil {
-			return []domain.User{}, errors.New("cannot retrieve users")
-		}
-		users = append(users, user)
-	}
-
-	if err := cur.Err(); err != nil {
+	err = cur.All(context.TODO(), users)
+	if err != nil {
 		return []domain.User{}, errors.New("cannot retrieve users")
 	}
 
