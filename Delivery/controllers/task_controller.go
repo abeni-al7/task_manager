@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/abeni-al7/task_manager/data"
-	"github.com/abeni-al7/task_manager/models"
+	"github.com/abeni-al7/task_manager/Domain"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -38,7 +38,7 @@ func GetTaskController(ctx *gin.Context) {
 }
 
 func UpdateTaskController(ctx *gin.Context) {
-	var updatedTask models.Task
+	var updatedTask domain.Task
 
 	idStr := ctx.Param("id")
 	id, err := primitive.ObjectIDFromHex(idStr)
@@ -85,7 +85,7 @@ func RemoveTaskController(ctx *gin.Context) {
 }
 
 func AddTaskController(ctx *gin.Context) {
-	var newTask models.Task
+	var newTask domain.Task
 	
 	if err := ctx.ShouldBindJSON(&newTask); err != nil {
 		ctx.JSON(http.StatusBadRequest, "Invalid task")

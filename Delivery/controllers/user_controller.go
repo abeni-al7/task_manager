@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/abeni-al7/task_manager/data"
-	"github.com/abeni-al7/task_manager/models"
+	"github.com/abeni-al7/task_manager/Domain"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -38,7 +38,7 @@ func GetUserController(ctx *gin.Context) {
 }
 
 func UpdateUserController(ctx *gin.Context) {
-	var updatedUser models.User
+	var updatedUser domain.User
 
 	idStr := ctx.Param("id")
 	id, err := primitive.ObjectIDFromHex(idStr)
@@ -129,12 +129,7 @@ func RemoveUserController(ctx *gin.Context) {
 }
 
 func RegisterUserController(ctx *gin.Context) {
-	type RegisterUserInput struct {
-		Username string `json:"username"`
-		Email string `json:"email"`
-		Password string `json:"password"`
-	}
-	var newUser RegisterUserInput
+	var newUser domain.RegisterUserInput
 	
 	if err := ctx.ShouldBindJSON(&newUser); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -146,7 +141,7 @@ func RegisterUserController(ctx *gin.Context) {
 		return
 	}
 
-	userToRegister := models.User{
+	userToRegister := domain.User{
 		Username: newUser.Username,
 		Password: newUser.Password,
 		Email: newUser.Email,
