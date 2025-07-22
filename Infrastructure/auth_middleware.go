@@ -1,10 +1,7 @@
 package infrastructure
 
 import (
-	"errors"
 	"net/http"
-	"os"
-	"strings"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
@@ -14,28 +11,10 @@ import (
 func AuthMiddleware() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		authHeader := ctx.GetHeader("Authorization")
-		if authHeader == "" {
-			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "log in inorder to access this route"})
-			ctx.Abort()
-			return
-		}
 
-		authParts := strings.Split(authHeader, " ")
-		if len(authParts) != 2 || strings.ToLower(authParts[0]) != "bearer" {
-			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "invalid authorization header"})
-			ctx.Abort()
-			return
-		}
-
-		token, err := jwt.Parse(authParts[1], func(token *jwt.Token) (interface{}, error) {
-			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, errors.New("invalid token")
-			}
-			return []byte(os.Getenv("JWT_SECRET")), nil
-		})
-
-		if err != nil || !token.Valid {
-			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
+		token, err := ValidateJwtToken(authHeader)
+		if err != nil {
+			ctx.JSON(http.StatusUnauthorized, gin.H{"error": err})
 			ctx.Abort()
 			return
 		}

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/abeni-al7/task_manager/Domain"
+	infrastructure "github.com/abeni-al7/task_manager/Infrastructure"
 	"github.com/dgrijalva/jwt-go"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -195,21 +196,9 @@ func LoginUserService(username string, password string) (string, error) {
 		return "", errors.New("invalid username or password")
 	}
 
-	if bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)) != nil {
-		return "", errors.New("invalid username or password")
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"user_id": user.ID,
-		"email": user.Email,
-		"username": user.Username,
-		"role": user.Role,
-		"exp": time.Now().Add(time.Hour * 24).Unix(),
-	})
-
-	jwtToken, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
+	jwtToken, err := infrastructure.GenerateJwtToken(&user, password)
 	if err != nil {
-		return "", errors.New(err.Error())
+		return "", err
 	}
 
 	return jwtToken, nil
