@@ -3,12 +3,10 @@ package data
 import (
 	"context"
 	"errors"
-	"os"
 	"time"
 
 	"github.com/abeni-al7/task_manager/Domain"
-	infrastructure "github.com/abeni-al7/task_manager/Infrastructure"
-	"github.com/dgrijalva/jwt-go"
+	"github.com/abeni-al7/task_manager/Infrastructure"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
