@@ -8,12 +8,12 @@ import (
 
 	"github.com/abeni-al7/task_manager/Domain"
 	"github.com/dgrijalva/jwt-go"
-	"golang.org/x/crypto/bcrypt"
 )
 
 func GenerateJwtToken(user *domain.User, password string) (string, error) {
-	if bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)) != nil {
-		return "", errors.New("invalid username or password")
+	err := ComparePassword([]byte(user.Password), []byte(password))
+	if err != nil {
+		return "", err
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{

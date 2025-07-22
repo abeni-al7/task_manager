@@ -5,8 +5,8 @@ import (
 	"errors"
 	"time"
 
-	"github.com/abeni-al7/task_manager/Domain"
-	"github.com/abeni-al7/task_manager/Infrastructure"
+	domain "github.com/abeni-al7/task_manager/Domain"
+	infrastructure "github.com/abeni-al7/task_manager/Infrastructure"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
@@ -161,21 +161,20 @@ func RegisterUserService(newUser domain.User) (domain.User, error) {
 	newUser.CreatedAt = time.Now()
 	newUser.UpdatedAt = time.Now()
 
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newUser.Password), bcrypt.DefaultCost)
+	hashedPassword, err := infrastructure.HashPassword(newUser.Password)
 	if err != nil {
 		return domain.User{}, errors.New(err.Error())
 	}
-	newUser.Password = string(hashedPassword)
+	newUser.Password = hashedPassword
 
 	userCount, err := UserCollection.CountDocuments(context.TODO(), bson.D{{}})
 	if err != nil {
 		return domain.User{}, errors.New("unable to register user")
 	}
 
-	switch userCount{
-	case 0:
+	if userCount == 0 {
 		newUser.Role = "admin"
-	default:
+	} else {
 		newUser.Role = "regular"
 	}
 
