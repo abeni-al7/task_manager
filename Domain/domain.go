@@ -75,14 +75,3 @@ type UserUsecase interface {
 	ChangePassword(id primitive.ObjectID, prevPassword string, newPassword string) error
 	Remove(id primitive.ObjectID) error
 }
-
-type UserRepository interface {
-	Register(user *User) (User, error)
-	Login(username string, password string) (string, error)
-	Promote(id primitive.ObjectID) (User, error)
-	FetchAll() ([]User, error)
-	Fetch(id primitive.ObjectID) (User, error)
-	Update(id primitive.ObjectID, updatedUser User) (User, error)
-	ChangePassword(id primitive.ObjectID, prevPassword string, newPassword string) error
-	Remove(id primitive.ObjectID) error
-}
