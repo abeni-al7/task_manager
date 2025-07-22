@@ -2,9 +2,10 @@ package main
 
 import (
 	"log"
+	"os"
 
+	"github.com/abeni-al7/task_manager/Delivery/router"
 	"github.com/abeni-al7/task_manager/data"
-	"github.com/abeni-al7/task_manager/router"
 	"github.com/joho/godotenv"
 )
 
@@ -14,5 +15,6 @@ func main() {
 		log.Fatal("failed to load .env")
 	}
 	data.ConnectToMongoDB()
-	router.Init()
+	routers := router.Init()
+	routers.Run(os.Getenv("HOST_URL"))
 }
