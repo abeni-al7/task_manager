@@ -3,40 +3,17 @@ package data
 import (
 	"context"
 	"errors"
-	"log"
-	"os"
 	"time"
 
 	"github.com/abeni-al7/task_manager/Domain"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
-var (
-	TaskCollection *mongo.Collection
-	UserCollection *mongo.Collection
-)
-
-func ConnectToMongoDB() {
-	mongoClientOptions := options.Client().ApplyURI(os.Getenv("MONGODB_URI"))
-
-	mongoClient, err := mongo.Connect(context.TODO(), mongoClientOptions)
-	if err != nil {
-		log.Fatal(err)
-	}
-	
-	if err := mongoClient.Ping(context.TODO(), nil); err != nil {
-		log.Fatal(err)
-	}
-	TaskCollection = mongoClient.Database("task_manager").Collection("tasks")
-	UserCollection = mongoClient.Database("task_manager").Collection("users")
-}
 
 func GetTasksService() ([]domain.Task, error) {
 	var tasks []domain.Task
 
-	cur, err := TaskCollection.Find(context.TODO(), bson.D{{}})
+	cur, err := domain.TaskCollection.Find(context.TODO(), bson.D{{}})
 	if err != nil {
 		return []domain.Task{}, errors.New("cannot retrieve tasks")
 	}
@@ -64,7 +41,7 @@ func GetTaskService(id primitive.ObjectID) (domain.Task, error) {
 
 	filter := bson.D{{Key: "_id", Value: id}}
 
-	err := TaskCollection.FindOne(context.TODO(), filter).Decode(&task)
+	err := domain.TaskCollection.FindOne(context.TODO(), filter).Decode(&task)
 	if err != nil {
 		return domain.Task{}, errors.New("task not found")
 	}
@@ -93,12 +70,12 @@ func UpdateTaskService(id primitive.ObjectID, updatedTask domain.Task) (domain.T
 
 	update := bson.D{{Key: "$set", Value: fields}}
 
-	_, err := TaskCollection.UpdateOne(context.TODO(), filter, update)
+	_, err := domain.TaskCollection.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
 		return domain.Task{}, errors.New(err.Error())
 	}
 	
-	err = TaskCollection.FindOne(context.TODO(), filter).Decode(&task)
+	err = domain.TaskCollection.FindOne(context.TODO(), filter).Decode(&task)
 	if err != nil {
 		return domain.Task{}, errors.New("task not found")
 	}
@@ -107,7 +84,7 @@ func UpdateTaskService(id primitive.ObjectID, updatedTask domain.Task) (domain.T
 
 func RemoveTaskService(id primitive.ObjectID) error {
 	filter := bson.D{{Key: "_id", Value: id}}
-	_, err := TaskCollection.DeleteOne(context.TODO(), filter)
+	_, err := domain.TaskCollection.DeleteOne(context.TODO(), filter)
 
 	if err != nil {
 		return errors.New("task not found")
@@ -121,7 +98,7 @@ func AddTaskService(newTask domain.Task) (domain.Task, error) {
 	newTask.CreatedAt = time.Now()
 	newTask.UpdatedAt = time.Now()
 
-	_, err := TaskCollection.InsertOne(context.TODO(), newTask)
+	_, err := domain.TaskCollection.InsertOne(context.TODO(), newTask)
 	if err != nil {
 		return domain.Task{}, errors.New(err.Error())
 	}

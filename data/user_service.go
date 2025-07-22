@@ -5,8 +5,8 @@ import (
 	"errors"
 	"time"
 
-	domain "github.com/abeni-al7/task_manager/Domain"
-	infrastructure "github.com/abeni-al7/task_manager/Infrastructure"
+	"github.com/abeni-al7/task_manager/Domain"
+	"github.com/abeni-al7/task_manager/Infrastructure"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
@@ -15,7 +15,7 @@ import (
 func GetUsersService() ([]domain.User, error) {
 	var users []domain.User
 
-	cur, err := UserCollection.Find(context.TODO(), bson.D{{}})
+	cur, err := domain.UserCollection.Find(context.TODO(), bson.D{{}})
 	if err != nil {
 		return []domain.User{}, errors.New("cannot retrieve users")
 	}
@@ -43,7 +43,7 @@ func GetUserService(id primitive.ObjectID) (domain.User, error) {
 
 	filter := bson.D{{Key: "_id", Value: id}}
 
-	err := UserCollection.FindOne(context.TODO(), filter).Decode(&user)
+	err := domain.UserCollection.FindOne(context.TODO(), filter).Decode(&user)
 	if err != nil {
 		return domain.User{}, errors.New("user not found")
 	}
@@ -63,12 +63,12 @@ func UpdateUserService(id primitive.ObjectID, updatedUser domain.User) (domain.U
 
 	update := bson.D{{Key: "$set", Value: fields}}
 
-	_, err := UserCollection.UpdateOne(context.TODO(), filter, update)
+	_, err := domain.UserCollection.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
 		return domain.User{}, errors.New(err.Error())
 	}
 	
-	err = UserCollection.FindOne(context.TODO(), filter).Decode(&user)
+	err = domain.UserCollection.FindOne(context.TODO(), filter).Decode(&user)
 	if err != nil {
 		return domain.User{}, errors.New(err.Error())
 	}
@@ -80,7 +80,7 @@ func ChangePasswordService(id primitive.ObjectID, prevPassword string, newPasswo
 
 	filter := bson.D{{Key: "_id", Value: id}}
 
-	err := UserCollection.FindOne(context.TODO(), filter).Decode(&user)
+	err := domain.UserCollection.FindOne(context.TODO(), filter).Decode(&user)
 	if err != nil {
 		return errors.New(err.Error())
 	}
@@ -98,7 +98,7 @@ func ChangePasswordService(id primitive.ObjectID, prevPassword string, newPasswo
 		{Key: "password", Value: string(hashedPassword)},
 	}}}
 
-	_, err = UserCollection.UpdateOne(context.TODO(), filter, update)
+	_, err = domain.UserCollection.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
 		return errors.New(err.Error())
 	}
@@ -114,12 +114,12 @@ func PromoteUserService(id primitive.ObjectID) (domain.User, error) {
 		{Key: "role", Value: "admin"},
 	}}}
 
-	_, err := UserCollection.UpdateOne(context.TODO(), filter, update)
+	_, err := domain.UserCollection.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
 		return domain.User{}, errors.New(err.Error())
 	}
 	
-	err = UserCollection.FindOne(context.TODO(), filter).Decode(&user)
+	err = domain.UserCollection.FindOne(context.TODO(), filter).Decode(&user)
 	if err != nil {
 		return domain.User{}, errors.New("user not found")
 	}
@@ -131,7 +131,7 @@ func RemoveUserService(id primitive.ObjectID) error {
 
 	filter := bson.D{{Key: "_id", Value: id}}
 
-	err := UserCollection.FindOne(context.TODO(), filter).Decode(&user)
+	err := domain.UserCollection.FindOne(context.TODO(), filter).Decode(&user)
 	if err != nil {
 		return errors.New("user not found")
 	}
@@ -139,7 +139,7 @@ func RemoveUserService(id primitive.ObjectID) error {
 	if user.Role == "admin" {
 		return errors.New("admin cannot be deleted")
 	}
-	_, err = UserCollection.DeleteOne(context.TODO(), filter)
+	_, err = domain.UserCollection.DeleteOne(context.TODO(), filter)
 
 	if err != nil {
 		return errors.New("user not found")
@@ -151,7 +151,7 @@ func RemoveUserService(id primitive.ObjectID) error {
 func RegisterUserService(newUser domain.User) (domain.User, error) {
 	var existingUser domain.User
 
-	err := UserCollection.FindOne(context.TODO(), bson.D{{Key: "username", Value: newUser.Username}}).Decode(&existingUser)
+	err := domain.UserCollection.FindOne(context.TODO(), bson.D{{Key: "username", Value: newUser.Username}}).Decode(&existingUser)
 
 	if err == nil {
 		return domain.User{}, errors.New("user already exists")
@@ -167,7 +167,7 @@ func RegisterUserService(newUser domain.User) (domain.User, error) {
 	}
 	newUser.Password = hashedPassword
 
-	userCount, err := UserCollection.CountDocuments(context.TODO(), bson.D{{}})
+	userCount, err := domain.UserCollection.CountDocuments(context.TODO(), bson.D{{}})
 	if err != nil {
 		return domain.User{}, errors.New("unable to register user")
 	}
@@ -178,7 +178,7 @@ func RegisterUserService(newUser domain.User) (domain.User, error) {
 		newUser.Role = "regular"
 	}
 
-	_, err = UserCollection.InsertOne(context.TODO(), newUser)
+	_, err = domain.UserCollection.InsertOne(context.TODO(), newUser)
 	if err != nil {
 		return domain.User{}, errors.New(err.Error())
 	}
@@ -188,7 +188,7 @@ func RegisterUserService(newUser domain.User) (domain.User, error) {
 func LoginUserService(username string, password string) (string, error) {
 	var user domain.User
 
-	err := UserCollection.FindOne(context.TODO(), bson.D{{Key: "username", Value: username}}).Decode(&user)
+	err := domain.UserCollection.FindOne(context.TODO(), bson.D{{Key: "username", Value: username}}).Decode(&user)
 	if err != nil {
 		return "", errors.New("invalid username or password")
 	}
