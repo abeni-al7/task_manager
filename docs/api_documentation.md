@@ -25,20 +25,20 @@ It allows clients to
 
 ## Usage
 1. Clone the github repository
-```
+```bash
 git clone https://github.com/abeni-al7/task_manager
 ```
 2. Get into the directory
-```
+```bash
 cd task_manager
 ```
 3. Configure environment variables with your database URI and HOST URL
-```
+```bash
 mv .env.example .env
 ```
 Get into .env and edit the default values with your own credentials
 3. Run the server 
-```
+```bash
 go run main.go
 ```
 
@@ -49,9 +49,11 @@ For the APIs which are protected, use "bearer xxxxxxxxxxxx" on the authorization
 ### http://localhost:8080/tasks/
 
 #### Example Request
-```curl --location 'http://localhost:8080/tasks/'```
-#### Example Response
+```bash
+curl --location 'http://localhost:8080/tasks/'
 ```
+#### Example Response
+```bash
 {
   "tasks": [
     {
@@ -71,11 +73,11 @@ For the APIs which are protected, use "bearer xxxxxxxxxxxx" on the authorization
 ### http://localhost:8080/tasks/:id
 
 #### Example Request
-```
+```bash
 curl --location 'http://localhost:8080/tasks/6878eb6ddfbd2f90f0d2c60a'
 ```
 #### Example Response
-```
+```bash
 {
   "id": "6878eb6ddfbd2f90f0d2c60a"1,
   "title": "not urgent",
@@ -91,7 +93,7 @@ curl --location 'http://localhost:8080/tasks/6878eb6ddfbd2f90f0d2c60a'
 ### http://localhost:8080/tasks/:id
 
 #### Example Request
-```
+```bash
 curl --location --request PUT 'http://localhost:8080/tasks/6878eb6ddfbd2f90f0d2c60a' \
 --data '{
     "title": "Updated Title",
@@ -99,7 +101,7 @@ curl --location --request PUT 'http://localhost:8080/tasks/6878eb6ddfbd2f90f0d2c
 }'
 ```
 #### Example Response
-```
+```bash
 {
   "id": "6878eb6ddfbd2f90f0d2c60a",
   "title": "Updated Title",
@@ -115,7 +117,7 @@ curl --location --request PUT 'http://localhost:8080/tasks/6878eb6ddfbd2f90f0d2c
 ### http://localhost:8080/tasks/:id
 
 #### Example Request
-```
+```bash
 curl --location 'http://localhost:8080/tasks/' \
 --data '{
     "title": "not urgent",
@@ -125,7 +127,7 @@ curl --location 'http://localhost:8080/tasks/' \
 }'
 ```
 #### Example Response
-```
+```bash
 {
   "id": "6878eb6ddfbd2f90f0d2c60a",
   "title": "Updated Title",
@@ -141,11 +143,11 @@ curl --location 'http://localhost:8080/tasks/' \
 ### http://localhost:8080/tasks/:id
 
 #### Example Request
-```
+```bash
 curl --location --request DELETE 'http://localhost:8080/tasks/6878eb6ddfbd2f90f0d2c60a'
 ```
 #### Example Response
-```
+```bash
 Status code: 204
 ```
 
@@ -153,9 +155,11 @@ Status code: 204
 ### http://localhost:8080/users/
 
 #### Example Request
-```curl --location 'http://localhost:8080/users/'```
-#### Example Response
+```bash
+curl --location 'http://localhost:8080/users/'
 ```
+#### Example Response
+```bash
 {
     "users": [
         {
@@ -182,11 +186,11 @@ Status code: 204
 ### http://localhost:8080/users/:id
 
 #### Example Request
-```
+```bash
 curl --location 'http://localhost:8080/users/6878eb6ddfbd2f90f0d2c60a'
 ```
 #### Example Response
-```
+```bash
 {
     "id": "6878eb6ddfbd2f90f0d2c60a",
     "username": "joe",
@@ -201,14 +205,14 @@ curl --location 'http://localhost:8080/users/6878eb6ddfbd2f90f0d2c60a'
 ### http://localhost:8080/users/:id
 
 #### Example Request
-```
+```bash
 curl --location --request PUT 'http://localhost:8080/users/6878eb6ddfbd2f90f0d2c60a' \
 --data '{
     "email": "updated@email.co",
 }'
 ```
 #### Example Response
-```
+```bash
 {
     "id": "6878eb6ddfbd2f90f0d2c60a",
     "username": "heisenberg",
@@ -223,7 +227,7 @@ curl --location --request PUT 'http://localhost:8080/users/6878eb6ddfbd2f90f0d2c
 ### http://localhost:8080/login
 
 #### Example Request
-```
+```bash
 curl --location 'http://localhost:8080/login/' \
 --data '{
     "username": "heisenberg",
@@ -231,7 +235,7 @@ curl --location 'http://localhost:8080/login/' \
 }'
 ```
 #### Example Response
-```
+```bash
 {
     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFiZWJlQGFiZWIuY28iLCJleHAiOjE3NTMxMDI1MDAsInJvbGUiOiJhZG1pbiIsInVzZXJfaWQiOiI2ODdjZTU0NDMzZmQ0ODQ1OTYxNGNhNGUiLCJ1c2VybmFtZSI6ImhlaXNlbmJlcmcifQ.jRKtw8UG0jNT20Yf4wjZS9kQTo9-WAEfSH4kmxXXI_M"
 }
@@ -241,7 +245,7 @@ curl --location 'http://localhost:8080/login/' \
 ### http://localhost:8080/register
 
 #### Example Request
-```
+```bash
 curl --location 'http://localhost:8080/register/' \
 --data '{
     "username": "heisenberg",
@@ -250,7 +254,7 @@ curl --location 'http://localhost:8080/register/' \
 }'
 ```
 #### Example Response
-```
+```bash
 {
     "id": "687ce5ab33fd48459614ca4f",
     "username": "heisenberg",
@@ -265,11 +269,11 @@ curl --location 'http://localhost:8080/register/' \
 ### http://localhost:8080/promote/:id
 
 #### Example Request
-```
+```bash
 curl --location 'http://localhost:8080/promote/687ce5ab33fd48459614ca4f' \
 ```
 #### Example Response
-```
+```bash
 {
     "id": "687ce5ab33fd48459614ca4f",
     "username": "heisenberg",
@@ -300,10 +304,74 @@ curl --location 'http://localhost:8080/687ce5ab33fd48459614ca4f/change-password'
 ### http://localhost:8080/users/:id
 
 #### Example Request
-```
+```bash
 curl --location --request DELETE 'http://localhost:8080/users/6878eb6ddfbd2f90f0d2c60a'
 ```
 #### Example Response
-```
+```bash
 Status code: 204
 ```
+
+## Architecture
+The project is structured in the following format
+```bash
+.
+├── Delivery
+│   ├── controllers
+│   │   ├── task_controller.go
+│   │   └── user_controller.go
+│   ├── main.go
+│   └── router
+│       └── router.go
+├── Domain
+│   └── domain.go
+├── Infrastructure
+│   ├── auth_middleware.go
+│   ├── jwt_service.go
+│   └── password_service.go
+├── Repositories
+│   ├── task_repository.go
+│   └── user_repository.go
+├── Usecases
+│   ├── task_usecases.go
+│   └── user_usecases.go
+├── docs
+│   └── api_documentation.md
+├── go.mod
+└── go.sum
+```
+
+This format of structuring a project is called the Clean architecture and the different layers of this project in accordance with the Clean architecture principle are the following:
+
+- Delivery: This is the layer which contains logic for the mod of delivery of the Task manager project. The mode of delivery implemented here is REST APIs which can be consumed by client applications. For that there are routers and controllers. The controllers interact with the usecases to deliver the functionality needed.
+
+- Domain: This is the layer which contains the core data structures and system wide implementations that feed every other layer in the architecture. In our case the domain contains the 2 core models for this project namely task and user. It also contains the database connection object as well as input structs. The 2 core structs for this project are:
+```Golang
+type Task struct {
+	ID primitive.ObjectID `bson:"_id" json:"id"`
+	Title string `bson:"title" json:"title"`
+	Description string `bson:"description" json:"description"`
+	DueDate time.Time `bson:"due_date" json:"due_date"`
+	Status string `bson:"status" json:"status"`
+	CreatedAt time.Time `bson:"created_at" json:"created_at"`
+	UpdatedAt time.Time `bson:"updated_at" json:"updated_at"`
+}
+
+type User struct {
+	ID primitive.ObjectID `bson:"_id" json:"id"`
+	Username string `bson:"username" json:"username"`
+	Role string `bson:"role" json:"role"`
+	Email string `bson:"email" json:"email"`
+	Password string `bson:"password" json:"-"`
+	CreatedAt time.Time `bson:"created_at" json:"created_at"`
+	UpdatedAt time.Time `bson:"updated_at" json:"updated_at"`
+}
+```
+
+- Infrastructure: This layer contains the implementation for the security features that support the whole project. It has JWT token generation and validation, password hashing and validation as well as authorization middlewares to limit access to secure routes.
+
+- Repositories: This layer contains the logic for the database interaction this project would have to perform the use cases. It currently supports the mongoDB database and it can be swapped with any other database if needed.
+
+- Usecases: This layer contains the core business logic of the application. This layer is agnostic towards the framework used or the database utilized. It supports data validation and communicates with the repositories layer for database functionality.
+
+This approach was chosen for structuring this project because it allows flexibility in responding to changes in requirement or tools that could arise later during the maintenance of the project.
