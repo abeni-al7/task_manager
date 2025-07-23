@@ -5,7 +5,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/abeni-al7/task_manager/Domain"
+	domain "github.com/abeni-al7/task_manager/Domain"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -48,7 +48,7 @@ func (tr *TaskRepository) FetchAll() ([]domain.Task, error) {
 		return []domain.Task{}, errors.New("cannot retrieve tasks")
 	}
 
-	err = cur.All(context.TODO(), tasks)
+	err = cur.All(context.TODO(), &tasks)
 	if err != nil {
 		return []domain.Task{}, errors.New("cannot retrieve tasks")
 	}

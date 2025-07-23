@@ -104,12 +104,12 @@ func (ur *UserRepository) FetchAll() ([]domain.User, error) {
 
 	cur, err := ur.database.Collection(ur.collection).Find(context.TODO(), bson.D{{}})
 	if err != nil {
-		return []domain.User{}, errors.New("cannot retrieve users")
+		return []domain.User{}, errors.New(err.Error())
 	}
 
-	err = cur.All(context.TODO(), users)
+	err = cur.All(context.TODO(), &users)
 	if err != nil {
-		return []domain.User{}, errors.New("cannot retrieve users")
+		return []domain.User{}, errors.New(err.Error())
 	}
 
 	cur.Close(context.TODO())
