@@ -12,8 +12,9 @@ import (
 )
 
 var (
-	TaskCollection *mongo.Collection
-	UserCollection *mongo.Collection
+	Database *mongo.Database
+	TaskCollection string = "tasks"
+	UserCollection string = "users"
 )
 
 func ConnectToMongoDB() {
@@ -27,8 +28,7 @@ func ConnectToMongoDB() {
 	if err := mongoClient.Ping(context.TODO(), nil); err != nil {
 		log.Fatal(err)
 	}
-	TaskCollection = mongoClient.Database("task_manager").Collection("tasks")
-	UserCollection = mongoClient.Database("task_manager").Collection("users")
+	Database = mongoClient.Database("task_manager")
 }
 
 type Task struct {

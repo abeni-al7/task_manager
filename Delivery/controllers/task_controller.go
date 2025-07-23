@@ -10,7 +10,7 @@ import (
 )
 
 type TaskController struct {
-	taskUsecase usecases.TaskUsecase
+	TaskUsecase usecases.TaskUsecase
 }
 
 func (tc *TaskController) Create(ctx *gin.Context) {
@@ -21,7 +21,7 @@ func (tc *TaskController) Create(ctx *gin.Context) {
 		return
 	}
 	
-	task, err := tc.taskUsecase.Create(&newTask)
+	task, err := tc.TaskUsecase.Create(&newTask)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, err.Error())
 	}
@@ -29,7 +29,7 @@ func (tc *TaskController) Create(ctx *gin.Context) {
 }
 
 func (tc *TaskController) FetchAll(ctx *gin.Context) {
-	tasks, err := tc.taskUsecase.FetchAll()
+	tasks, err := tc.TaskUsecase.FetchAll()
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -46,7 +46,7 @@ func (tc *TaskController) Fetch(ctx *gin.Context) {
 		return
 	}
 
-	task, err := tc.taskUsecase.Fetch(id)
+	task, err := tc.TaskUsecase.Fetch(id)
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -70,7 +70,7 @@ func (tc *TaskController) Update(ctx *gin.Context) {
 		return
 	}
 
-	task, err := tc.taskUsecase.Update(id, updatedTask)
+	task, err := tc.TaskUsecase.Update(id, updatedTask)
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -86,7 +86,7 @@ func (tc *TaskController) Remove(ctx *gin.Context) {
 		return
 	}
 
-	err = tc.taskUsecase.Remove(id)
+	err = tc.TaskUsecase.Remove(id)
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return

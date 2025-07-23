@@ -25,6 +25,13 @@ type TaskRepository struct {
 	collection string
 }
 
+func NewTaskRepository(db mongo.Database, collection string) *TaskRepository {
+	return &TaskRepository{
+		database: db,
+		collection: collection,
+	}
+}
+
 func (tr *TaskRepository) Create(task *domain.Task) (*domain.Task, error) {
 	_, err :=tr.database.Collection(tr.collection).InsertOne(context.TODO(), task)
 	if err != nil {

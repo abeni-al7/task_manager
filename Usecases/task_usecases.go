@@ -22,6 +22,12 @@ type TaskUsecase struct {
 	taskRepo repositories.TaskRepository
 }
 
+func NewTaskUsecase(tr repositories.TaskRepository) *TaskUsecase {
+	return &TaskUsecase{
+		taskRepo: tr,
+	}
+}
+
 func (tu *TaskUsecase) Create(task *domain.Task) (domain.Task, error) {
 	if task.Title == "" || task.Description == "" || 
 	time.Time.IsZero(task.DueDate) || task.Status == "" {

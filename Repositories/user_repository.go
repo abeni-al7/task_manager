@@ -5,8 +5,8 @@ import (
 	"errors"
 	"time"
 
-	"github.com/abeni-al7/task_manager/Domain"
-	"github.com/abeni-al7/task_manager/Infrastructure"
+	domain "github.com/abeni-al7/task_manager/Domain"
+	infrastructure "github.com/abeni-al7/task_manager/Infrastructure"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -29,6 +29,13 @@ type UserRepository struct {
 	collection string
 }
 
+func NewUserRepository(db mongo.Database, collection string) *UserRepository {
+	return &UserRepository{
+		database: db,
+		collection: collection,
+	}
+}
+
 func (ur *UserRepository) Register(user *domain.User) (domain.User, error) {
 	var existingUser domain.User
 
@@ -37,16 +44,6 @@ func (ur *UserRepository) Register(user *domain.User) (domain.User, error) {
 	if err == nil {
 		return domain.User{}, errors.New("user already exists")
 	}
-
-	user.ID = primitive.NewObjectID()
-	user.CreatedAt = time.Now()
-	user.UpdatedAt = time.Now()
-
-	hashedPassword, err := infrastructure.HashPassword(user.Password)
-	if err != nil {
-		return domain.User{}, errors.New(err.Error())
-	}
-	user.Password = hashedPassword
 
 	userCount, err := ur.database.Collection(ur.collection).CountDocuments(context.TODO(), bson.D{{}})
 	if err != nil {
@@ -158,22 +155,11 @@ func (ur *UserRepository) Update(id primitive.ObjectID, updatedUser domain.User)
 }
 
 func (ur *UserRepository) ChangePassword(id primitive.ObjectID, prevPassword string, newPassword string) error {
-	var user domain.User
-
 	filter := bson.D{{Key: "_id", Value: id}}
-
-	err := ur.database.Collection(ur.collection).FindOne(context.TODO(), filter).Decode(&user)
-	if err != nil {
-		return errors.New(err.Error())
-	}
-
-	if bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(prevPassword)) != nil {
-		return errors.New("incorrect password")
-	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
 	if err != nil {
-		return errors.New(err.Error())
+		return errors.New("system could not hash the password")
 	}
 
 	update := bson.D{{Key: "$set", Value: bson.D{
@@ -182,26 +168,16 @@ func (ur *UserRepository) ChangePassword(id primitive.ObjectID, prevPassword str
 
 	_, err = ur.database.Collection(ur.collection).UpdateOne(context.TODO(), filter, update)
 	if err != nil {
-		return errors.New(err.Error())
+		return errors.New("system could not update user")
 	}
 
 	return nil
 }
 
 func (ur *UserRepository) Remove(id primitive.ObjectID) error {
-	var user domain.User
-
 	filter := bson.D{{Key: "_id", Value: id}}
 
-	err := ur.database.Collection(ur.collection).FindOne(context.TODO(), filter).Decode(&user)
-	if err != nil {
-		return errors.New("user not found")
-	}
-
-	if user.Role == "admin" {
-		return errors.New("admin cannot be deleted")
-	}
-	_, err = ur.database.Collection(ur.collection).DeleteOne(context.TODO(), filter)
+	_, err := ur.database.Collection(ur.collection).DeleteOne(context.TODO(), filter)
 
 	if err != nil {
 		return errors.New("user not found")
