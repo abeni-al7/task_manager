@@ -45,6 +45,8 @@ go run main.go
 ## Task Manager API Documentation
 For the APIs which are protected, use "bearer xxxxxxxxxxxx" on the authorization header with your JWT token which expires after 24 hours and need to be generated vial login.
 
+You can find the postman API documentation at: https://documenter.getpostman.com/view/46775407/2sB34ijKAe
+
 ### GET Tasks (open for all users)
 ### http://localhost:8080/tasks/
 
