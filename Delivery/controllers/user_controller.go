@@ -3,8 +3,8 @@ package controllers
 import (
 	"net/http"
 
-	"github.com/abeni-al7/task_manager/Domain"
-	"github.com/abeni-al7/task_manager/Usecases"
+	domain "github.com/abeni-al7/task_manager/Domain"
+	usecases "github.com/abeni-al7/task_manager/Usecases"
 	"github.com/gin-gonic/gin"
 )
 
@@ -41,6 +41,7 @@ func (uc *UserController) Register(ctx *gin.Context) {
 	user, err := uc.UserUsecase.Register(&userToRegister)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, err.Error())
+		return
 	}
 	ctx.JSON(http.StatusCreated, user)
 }

@@ -5,8 +5,8 @@ import (
 	"errors"
 	"time"
 
-	"github.com/abeni-al7/task_manager/Domain"
-	"github.com/abeni-al7/task_manager/Infrastructure"
+	domain "github.com/abeni-al7/task_manager/Domain"
+	infrastructure "github.com/abeni-al7/task_manager/Infrastructure"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -27,8 +27,8 @@ func (ur *UserRepository) FetchByUsername(username string) (domain.User, error) 
 
 	err := ur.collection.FindOne(context.TODO(), bson.D{{Key: "username", Value: username}}).Decode(&existingUser)
 
-	if err == nil {
-		return domain.User{}, errors.New("user already exists")
+	if err != nil {
+		return domain.User{}, errors.New("user does not exists")
 	}
 	return existingUser, nil
 }
