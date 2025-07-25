@@ -11,39 +11,30 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-
-type TaskRepositoryInterface interface {
-	Create(task *domain.Task) (domain.Task, error)
-	FetchAll() ([]domain.Task, error)
-	Fetch(id primitive.ObjectID) (domain.Task, error)
-	Update(id primitive.ObjectID, task domain.Task) (domain.Task, error)
-	Remove(id primitive.ObjectID) error
-}
-
 type TaskRepository struct {
-	database mongo.Database
-	collection string
+	collection *mongo.Collection
 }
 
-func NewTaskRepository(db mongo.Database, collection string) *TaskRepository {
+func NewTaskRepository(collection *mongo.Collection) *TaskRepository {
 	return &TaskRepository{
-		database: db,
 		collection: collection,
 	}
 }
 
-func (tr *TaskRepository) Create(task *domain.Task) (*domain.Task, error) {
-	_, err :=tr.database.Collection(tr.collection).InsertOne(context.TODO(), task)
+func (tr *TaskRepository) Create(task *domain.Task) (domain.Task, error) {
+	task.ID = primitive.NewObjectID()
+
+	_, err :=tr.collection.InsertOne(context.TODO(), task)
 	if err != nil {
-		return &domain.Task{}, errors.New("cannot insert task to database")
+		return domain.Task{}, errors.New("cannot insert task to database")
 	}
-	return task, nil
+	return *task, nil
 }
 
 func (tr *TaskRepository) FetchAll() ([]domain.Task, error) {
 	var tasks []domain.Task
 
-	cur, err := tr.database.Collection(tr.collection).Find(context.TODO(), bson.D{{}})
+	cur, err := tr.collection.Find(context.TODO(), bson.D{{}})
 	if err != nil {
 		return []domain.Task{}, errors.New("cannot retrieve tasks")
 	}
@@ -58,12 +49,17 @@ func (tr *TaskRepository) FetchAll() ([]domain.Task, error) {
 	return tasks, nil
 }
 
-func(tr *TaskRepository) Fetch(id primitive.ObjectID) (domain.Task, error) {
+func(tr *TaskRepository) Fetch(idStr string) (domain.Task, error) {
 	var task domain.Task
+
+	id, err := primitive.ObjectIDFromHex(idStr)
+	if err != nil {
+		return domain.Task{}, errors.New("invalid id")
+	}
 
 	filter := bson.D{{Key: "_id", Value: id}}
 
-	err := tr.database.Collection(tr.collection).FindOne(context.TODO(), filter).Decode(&task)
+	err = tr.collection.FindOne(context.TODO(), filter).Decode(&task)
 	if err != nil {
 		return domain.Task{}, errors.New("task not found")
 	}
@@ -71,8 +67,14 @@ func(tr *TaskRepository) Fetch(id primitive.ObjectID) (domain.Task, error) {
 	return task, nil
 }
 
-func(tr *TaskRepository) Update(id primitive.ObjectID, task domain.Task) (domain.Task, error) {
+func(tr *TaskRepository) Update(idStr string, task domain.Task) (domain.Task, error) {
 	var updatedTask domain.Task
+
+	id, err := primitive.ObjectIDFromHex(idStr)
+	if err != nil {
+		return domain.Task{}, errors.New("invalid id")
+	}
+
 	filter := bson.D{{Key: "_id", Value: id}}
 
 	fields := bson.D{}
@@ -92,21 +94,26 @@ func(tr *TaskRepository) Update(id primitive.ObjectID, task domain.Task) (domain
 
 	update := bson.D{{Key: "$set", Value: fields}}
 
-	_, err := tr.database.Collection(tr.collection).UpdateOne(context.TODO(), filter, update)
+	_, err = tr.collection.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
 		return domain.Task{}, errors.New(err.Error())
 	}
 	
-	err = tr.database.Collection(tr.collection).FindOne(context.TODO(), filter).Decode(&updatedTask)
+	err = tr.collection.FindOne(context.TODO(), filter).Decode(&updatedTask)
 	if err != nil {
 		return domain.Task{}, errors.New("task not found")
 	}
 	return updatedTask, nil
 }
 
-func (tr *TaskRepository) Remove(id primitive.ObjectID) error {
+func (tr *TaskRepository) Remove(idStr string) error {
+	id, err := primitive.ObjectIDFromHex(idStr)
+	if err != nil {
+		return errors.New("invalid id")
+	}
+
 	filter := bson.D{{Key: "_id", Value: id}}
-	_, err := tr.database.Collection(tr.collection).DeleteOne(context.TODO(), filter)
+	_, err = tr.collection.DeleteOne(context.TODO(), filter)
 
 	if err != nil {
 		return errors.New("task not found")

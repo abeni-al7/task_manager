@@ -12,9 +12,8 @@ import (
 )
 
 var (
-	Database *mongo.Database
-	TaskCollection string = "tasks"
-	UserCollection string = "users"
+	TaskCollection *mongo.Collection
+	UserCollection *mongo.Collection
 )
 
 func ConnectToMongoDB() {
@@ -28,7 +27,9 @@ func ConnectToMongoDB() {
 	if err := mongoClient.Ping(context.TODO(), nil); err != nil {
 		log.Fatal(err)
 	}
-	Database = mongoClient.Database("task_manager")
+	db := mongoClient.Database("task_manager")
+	TaskCollection = db.Collection("tasks")
+	UserCollection = db.Collection("users")
 }
 
 type Task struct {
@@ -49,10 +50,4 @@ type User struct {
 	Password string `bson:"password" json:"-"`
 	CreatedAt time.Time `bson:"created_at" json:"created_at"`
 	UpdatedAt time.Time `bson:"updated_at" json:"updated_at"`
-}
-
-type RegisterUserInput struct {
-	Username string `json:"username"`
-	Email string `json:"email"`
-	Password string `json:"password"`
 }

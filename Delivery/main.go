@@ -16,6 +16,6 @@ func main() {
 		log.Fatal("failed to load .env")
 	}
 	domain.ConnectToMongoDB()
-	routers := router.Init(*domain.Database, gin.Default())
+	routers := router.Init(gin.Default())
 	routers.Run(os.Getenv("HOST_URL"))
 }

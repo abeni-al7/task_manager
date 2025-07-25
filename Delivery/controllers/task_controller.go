@@ -6,7 +6,6 @@ import (
 	"github.com/abeni-al7/task_manager/Domain"
 	"github.com/abeni-al7/task_manager/Usecases"
 	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type TaskController struct {
@@ -38,13 +37,7 @@ func (tc *TaskController) FetchAll(ctx *gin.Context) {
 }
 
 func (tc *TaskController) Fetch(ctx *gin.Context) {
-	idStr := ctx.Param("id")
-
-	id, err := primitive.ObjectIDFromHex(idStr)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
+	id := ctx.Param("id")
 
 	task, err := tc.TaskUsecase.Fetch(id)
 	if err != nil {
@@ -58,12 +51,7 @@ func (tc *TaskController) Fetch(ctx *gin.Context) {
 func (tc *TaskController) Update(ctx *gin.Context) {
 	var updatedTask domain.Task
 
-	idStr := ctx.Param("id")
-	id, err := primitive.ObjectIDFromHex(idStr)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
+	id := ctx.Param("id")
 
 	if err := ctx.ShouldBindJSON(&updatedTask); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -79,14 +67,9 @@ func (tc *TaskController) Update(ctx *gin.Context) {
 }
 
 func (tc *TaskController) Remove(ctx *gin.Context) {
-	idStr := ctx.Param("id")
-	id, err := primitive.ObjectIDFromHex(idStr)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
+	id := ctx.Param("id")
 
-	err = tc.TaskUsecase.Remove(id)
+	err := tc.TaskUsecase.Remove(id)
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return

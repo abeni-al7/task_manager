@@ -5,39 +5,46 @@ import (
 	"time"
 
 	domain "github.com/abeni-al7/task_manager/Domain"
-	infrastructure "github.com/abeni-al7/task_manager/Infrastructure"
-	repositories "github.com/abeni-al7/task_manager/Repositories"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"golang.org/x/crypto/bcrypt"
+	usecases "github.com/abeni-al7/task_manager/Usecases/interfaces"
 )
 
-type UserUsecaseInterface interface {
-	Register(user *domain.User) (domain.User, error)
-	Login(username string, password string) (string, error)
-	Promote(id primitive.ObjectID) (domain.User, error)
-	FetchAll() ([]domain.User, error)
-	Fetch(id primitive.ObjectID) (domain.User, error)
-	Update(id primitive.ObjectID, updatedUser domain.User) (domain.User, error)
-	ChangePassword(id primitive.ObjectID, prevPassword string, newPassword string) error
-	Remove(id primitive.ObjectID) error
-}
-
 type UserUsecase struct {
-	userRepo repositories.UserRepository
+	userRepo usecases.IUserRepo
+	infra usecases.IInfrastructure
 }
 
-func NewUserUsecase(ur repositories.UserRepository) *UserUsecase {
+func NewUserUsecase(ur usecases.IUserRepo, infra usecases.IInfrastructure) *UserUsecase {
 	return &UserUsecase{
 		userRepo: ur,
+		infra: infra,
 	}
 }
 
 func (uu *UserUsecase) Register(user *domain.User) (domain.User, error) {
-	user.ID = primitive.NewObjectID()
+	if user.Username == "" || user.Email == "" || user.Password == "" {
+		return domain.User{}, errors.New("missing required fields")
+	}
+
+	_, err := uu.userRepo.FetchByUsername(user.Username)
+	if err == nil {
+		return domain.User{}, errors.New("user with this username already exists")
+	}
+
+	count, err := uu.userRepo.CountUsers()
+	if err != nil {
+		return domain.User{}, errors.New("unable to regiter user")
+	}
+
+	if count == 0 {
+		user.Role = "admin"
+	} else {
+		user.Role = "regular"
+	}
+
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = time.Now()
 
-	hashedPassword, err := infrastructure.HashPassword(user.Password)
+	hashedPassword, err := uu.infra.HashPassword(user.Password)
 	if err != nil {
 		return domain.User{}, errors.New(err.Error())
 	}
@@ -51,15 +58,35 @@ func (uu *UserUsecase) Register(user *domain.User) (domain.User, error) {
 }
 
 func (uu *UserUsecase) Login(username string, password string) (string, error) {
-	jwtToken, err := uu.userRepo.Login(username, password)
-	if err != nil {
-		return "", errors.New(err.Error())
+	if username == "" || password == "" {
+		return "", errors.New("missing username or password")
 	}
+
+	existingUser, err := uu.userRepo.FetchByUsername(username)
+	if err != nil {
+		return "", errors.New("invalid username or password")
+	}
+
+	err = uu.infra.ComparePassword([]byte(existingUser.Password), []byte(password))
+	if err != nil {
+		return "", errors.New("invalid username or password")
+	}
+
+	jwtToken, err := uu.infra.GenerateJwtToken(&existingUser)
+	if err != nil {
+		return "", errors.New("unable to generate token")
+	}
+
 	return jwtToken, nil
 }
 
-func (uu *UserUsecase) Promote(id primitive.ObjectID) (domain.User, error) {
-	user, err := uu.userRepo.Promote(id)
+func (uu *UserUsecase) Promote(id string) (domain.User, error) {
+	user, err := uu.userRepo.Fetch(id)
+	if err != nil {
+		return domain.User{}, errors.New("user does not exist")
+	}
+
+	user, err = uu.userRepo.Promote(&user)
 	if err != nil {
 		return domain.User{}, errors.New(err.Error())
 	}
@@ -74,7 +101,7 @@ func (uu *UserUsecase) FetchAll() ([]domain.User, error) {
 	return users, nil
 }
 
-func (uu *UserUsecase) Fetch(id primitive.ObjectID) (domain.User, error) {
+func (uu *UserUsecase) Fetch(id string) (domain.User, error) {
 	user, err := uu.userRepo.Fetch(id)
 	if err != nil {
 		return domain.User{}, errors.New(err.Error())
@@ -82,7 +109,7 @@ func (uu *UserUsecase) Fetch(id primitive.ObjectID) (domain.User, error) {
 	return user, nil
 }
 
-func (uu *UserUsecase) Update(id primitive.ObjectID, updatedUser domain.User) (domain.User, error) {
+func (uu *UserUsecase) Update(id string, updatedUser domain.User) (domain.User, error) {
 	user, err := uu.userRepo.Update(id, updatedUser)
 	if err != nil {
 		return domain.User{}, errors.New(err.Error())
@@ -90,13 +117,13 @@ func (uu *UserUsecase) Update(id primitive.ObjectID, updatedUser domain.User) (d
 	return user, nil
 }
 
-func (uu *UserUsecase) ChangePassword(id primitive.ObjectID, prevPassword string, newPassword string) error {
+func (uu *UserUsecase) ChangePassword(id string, prevPassword string, newPassword string) error {
 	existingUser, err := uu.userRepo.Fetch(id)
 	if err != nil {
 		return errors.New("user does not exist")
 	}
 
-	if bcrypt.CompareHashAndPassword([]byte(existingUser.Password), []byte(prevPassword)) != nil {
+	if uu.infra.ComparePassword([]byte(existingUser.Password), []byte(prevPassword)) != nil {
 		return errors.New("incorrect password")
 	}
 
@@ -107,7 +134,7 @@ func (uu *UserUsecase) ChangePassword(id primitive.ObjectID, prevPassword string
 	return nil
 }
 
-func (uu *UserUsecase) Remove(id primitive.ObjectID) error {
+func (uu *UserUsecase) Remove(id string) error {
 	user, err := uu.userRepo.Fetch(id)
 	if err != nil {
 		return errors.New("user did not exist")

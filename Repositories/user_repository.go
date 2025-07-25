@@ -5,111 +5,85 @@ import (
 	"errors"
 	"time"
 
-	domain "github.com/abeni-al7/task_manager/Domain"
-	infrastructure "github.com/abeni-al7/task_manager/Infrastructure"
+	"github.com/abeni-al7/task_manager/Domain"
+	"github.com/abeni-al7/task_manager/Infrastructure"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"golang.org/x/crypto/bcrypt"
 )
 
-type UserRepositoryInterface interface {
-	Register(user *domain.User) (domain.User, error)
-	Login(username string, password string) (string, error)
-	Promote(id primitive.ObjectID) (domain.User, error)
-	FetchAll() ([]domain.User, error)
-	Fetch(id primitive.ObjectID) (domain.User, error)
-	Update(id primitive.ObjectID, updatedUser domain.User) (domain.User, error)
-	ChangePassword(id primitive.ObjectID, prevPassword string, newPassword string) error
-	Remove(id primitive.ObjectID) error
-}
-
 type UserRepository struct {
-	database mongo.Database
-	collection string
+	collection *mongo.Collection
 }
 
-func NewUserRepository(db mongo.Database, collection string) *UserRepository {
+func NewUserRepository(collection *mongo.Collection) *UserRepository {
 	return &UserRepository{
-		database: db,
 		collection: collection,
 	}
 }
 
-func (ur *UserRepository) Register(user *domain.User) (domain.User, error) {
+func (ur *UserRepository) FetchByUsername(username string) (domain.User, error) {
 	var existingUser domain.User
 
-	err := ur.database.Collection(ur.collection).FindOne(context.TODO(), bson.D{{Key: "username", Value: user.Username}}).Decode(&existingUser)
+	err := ur.collection.FindOne(context.TODO(), bson.D{{Key: "username", Value: username}}).Decode(&existingUser)
 
 	if err == nil {
 		return domain.User{}, errors.New("user already exists")
 	}
+	return existingUser, nil
+}
 
-	userCount, err := ur.database.Collection(ur.collection).CountDocuments(context.TODO(), bson.D{{}})
+func (ur *UserRepository) CountUsers() (int, error) {
+	userCount, err := ur.collection.CountDocuments(context.TODO(), bson.D{{}})
 	if err != nil {
-		return domain.User{}, errors.New("unable to register user")
+		return 0, errors.New("unable to register user")
 	}
+	return int(userCount), nil
+}
 
-	if userCount == 0 {
-		user.Role = "admin"
-	} else {
-		user.Role = "regular"
-	}
+func (ur *UserRepository) Register(user *domain.User) (domain.User, error) {
+	user.ID = primitive.NewObjectID()
 
-	_, err = ur.database.Collection(ur.collection).InsertOne(context.TODO(), user)
+	_, err := ur.collection.InsertOne(context.TODO(), user)
 	if err != nil {
 		return domain.User{}, errors.New(err.Error())
 	}
+
 	return *user, nil
 }
 
-func (ur *UserRepository) Login(username string, password string) (string, error) {
-	var user domain.User
+func (ur *UserRepository) Promote(user *domain.User) (domain.User, error) {
+	var updatedUser domain.User
 
-	err := ur.database.Collection(ur.collection).FindOne(context.TODO(), bson.D{{Key: "username", Value: username}}).Decode(&user)
-	if err != nil {
-		return "", errors.New("invalid username or password")
-	}
-
-	jwtToken, err := infrastructure.GenerateJwtToken(&user, password)
-	if err != nil {
-		return "", err
-	}
-
-	return jwtToken, nil
-}
-
-func (ur *UserRepository) Promote(id primitive.ObjectID) (domain.User, error) {
-	var user domain.User
-	filter := bson.D{{Key: "_id", Value: id}}
+	filter := bson.D{{Key: "_id", Value: user.ID}}
 
 	update := bson.D{{Key: "$set", Value: bson.D{
 		{Key: "role", Value: "admin"},
 	}}}
 
-	_, err := ur.database.Collection(ur.collection).UpdateOne(context.TODO(), filter, update)
+	_, err := ur.collection.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
 		return domain.User{}, errors.New(err.Error())
 	}
 	
-	err = ur.database.Collection(ur.collection).FindOne(context.TODO(), filter).Decode(&user)
+	err = ur.collection.FindOne(context.TODO(), filter).Decode(&updatedUser)
 	if err != nil {
 		return domain.User{}, errors.New("user not found")
 	}
-	return user, nil
+	return updatedUser, nil
 }
 
 func (ur *UserRepository) FetchAll() ([]domain.User, error) {
 	var users []domain.User
 
-	cur, err := ur.database.Collection(ur.collection).Find(context.TODO(), bson.D{{}})
+	cur, err := ur.collection.Find(context.TODO(), bson.D{{}})
 	if err != nil {
-		return []domain.User{}, errors.New(err.Error())
+		return []domain.User{}, errors.New("could not fetch users")
 	}
 
 	err = cur.All(context.TODO(), &users)
 	if err != nil {
-		return []domain.User{}, errors.New(err.Error())
+		return []domain.User{}, errors.New("could not fetch users")
 	}
 
 	cur.Close(context.TODO())
@@ -117,12 +91,17 @@ func (ur *UserRepository) FetchAll() ([]domain.User, error) {
 	return users, nil
 }
 
-func (ur *UserRepository) Fetch(id primitive.ObjectID) (domain.User, error) {
+func (ur *UserRepository) Fetch(idStr string) (domain.User, error) {
 	var user domain.User
+
+	id, err := primitive.ObjectIDFromHex(idStr)
+	if err != nil {
+		return domain.User{}, errors.New("invalid id")
+	}
 
 	filter := bson.D{{Key: "_id", Value: id}}
 
-	err := ur.database.Collection(ur.collection).FindOne(context.TODO(), filter).Decode(&user)
+	err = ur.collection.FindOne(context.TODO(), filter).Decode(&user)
 	if err != nil {
 		return domain.User{}, errors.New("user not found")
 	}
@@ -130,8 +109,14 @@ func (ur *UserRepository) Fetch(id primitive.ObjectID) (domain.User, error) {
 	return user, nil
 }
 
-func (ur *UserRepository) Update(id primitive.ObjectID, updatedUser domain.User) (domain.User, error) {
+func (ur *UserRepository) Update(idStr string, updatedUser domain.User) (domain.User, error) {
 	var user domain.User
+
+	id, err := primitive.ObjectIDFromHex(idStr)
+	if err != nil {
+		return domain.User{}, errors.New("invalid id")
+	}
+
 	filter := bson.D{{Key: "_id", Value: id}}
 
 	fields := bson.D{}
@@ -142,22 +127,26 @@ func (ur *UserRepository) Update(id primitive.ObjectID, updatedUser domain.User)
 
 	update := bson.D{{Key: "$set", Value: fields}}
 
-	_, err := ur.database.Collection(ur.collection).UpdateOne(context.TODO(), filter, update)
+	_, err = ur.collection.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
 		return domain.User{}, errors.New(err.Error())
 	}
 	
-	err = ur.database.Collection(ur.collection).FindOne(context.TODO(), filter).Decode(&user)
+	err = ur.collection.FindOne(context.TODO(), filter).Decode(&user)
 	if err != nil {
 		return domain.User{}, errors.New(err.Error())
 	}
 	return user, nil
 }
 
-func (ur *UserRepository) ChangePassword(id primitive.ObjectID, prevPassword string, newPassword string) error {
+func (ur *UserRepository) ChangePassword(idStr string, prevPassword string, newPassword string) error {
+	id, err := primitive.ObjectIDFromHex(idStr)
+	if err != nil {
+		return errors.New("invalid id")
+	}
 	filter := bson.D{{Key: "_id", Value: id}}
 
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	hashedPassword, err := new(infrastructure.Infrastructure).HashPassword(newPassword)
 	if err != nil {
 		return errors.New("system could not hash the password")
 	}
@@ -166,7 +155,7 @@ func (ur *UserRepository) ChangePassword(id primitive.ObjectID, prevPassword str
 		{Key: "password", Value: string(hashedPassword)},
 	}}}
 
-	_, err = ur.database.Collection(ur.collection).UpdateOne(context.TODO(), filter, update)
+	_, err = ur.collection.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
 		return errors.New("system could not update user")
 	}
@@ -174,10 +163,15 @@ func (ur *UserRepository) ChangePassword(id primitive.ObjectID, prevPassword str
 	return nil
 }
 
-func (ur *UserRepository) Remove(id primitive.ObjectID) error {
+func (ur *UserRepository) Remove(idStr string) error {
+	id, err := primitive.ObjectIDFromHex(idStr)
+	if err != nil {
+		return errors.New("invalid id")
+	}
+
 	filter := bson.D{{Key: "_id", Value: id}}
 
-	_, err := ur.database.Collection(ur.collection).DeleteOne(context.TODO(), filter)
+	_, err = ur.collection.DeleteOne(context.TODO(), filter)
 
 	if err != nil {
 		return errors.New("user not found")

@@ -10,12 +10,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
-func GenerateJwtToken(user *domain.User, password string) (string, error) {
-	err := ComparePassword([]byte(user.Password), []byte(password))
-	if err != nil {
-		return "", err
-	}
-
+func (infra *Infrastructure) GenerateJwtToken(user *domain.User) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"user_id": user.ID,
 		"email": user.Email,

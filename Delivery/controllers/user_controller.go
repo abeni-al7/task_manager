@@ -6,8 +6,18 @@ import (
 	"github.com/abeni-al7/task_manager/Domain"
 	"github.com/abeni-al7/task_manager/Usecases"
 	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
+
+type UserInput struct {
+	Username string `json:"username"`
+	Email string `json:"email"`
+	Password string `json:"password"`
+}
+
+type PasswordInput struct {
+	PrevPassword string `json:"prev_password"`
+	NewPassword string `json:"new_password"`
+}
 
 type UserController struct {
 	UserUsecase usecases.UserUsecase
@@ -15,15 +25,10 @@ type UserController struct {
 
 
 func (uc *UserController) Register(ctx *gin.Context) {
-	var newUser domain.RegisterUserInput
+	var newUser UserInput
 	
 	if err := ctx.ShouldBindJSON(&newUser); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	
-	if newUser.Username == "" || newUser.Email == "" || newUser.Password == "" {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Missing required fields"})
 		return
 	}
 
@@ -41,26 +46,14 @@ func (uc *UserController) Register(ctx *gin.Context) {
 }
 
 func (uc *UserController) Login(ctx *gin.Context) {
-	var body map[string]interface{}
+	var user UserInput
 
-	if err := ctx.BindJSON(&body); err != nil {
+	if err := ctx.ShouldBindJSON(&user); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	username, ok := body["username"].(string)
-	if !ok {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "username is required"})
-		return
-	}
-
-	password, ok := body["password"].(string)
-	if !ok {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "password is required"})
-		return
-	}
-
-	token, err := uc.UserUsecase.Login(username, password)
+	token, err := uc.UserUsecase.Login(user.Username, user.Password)
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
@@ -69,12 +62,8 @@ func (uc *UserController) Login(ctx *gin.Context) {
 }
 
 func (uc *UserController) Promote(ctx *gin.Context) {
-	idStr := ctx.Param("id")
-	id, err := primitive.ObjectIDFromHex(idStr)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err})
-		return
-	}
+	id := ctx.Param("id")
+
 	user, err := uc.UserUsecase.Promote(id)
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{"error": err})
@@ -94,13 +83,7 @@ func (uc *UserController) FetchAll(ctx *gin.Context) {
 }
 
 func (uc *UserController) Fetch(ctx *gin.Context) {
-	idStr := ctx.Param("id")
-
-	id, err := primitive.ObjectIDFromHex(idStr)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
+	id := ctx.Param("id")
 
 	user, err := uc.UserUsecase.Fetch(id)
 	if err != nil {
@@ -115,18 +98,13 @@ func (uc *UserController) Update(ctx *gin.Context) {
 	var updatedUser domain.User
 
 	idStr := ctx.Param("id")
-	id, err := primitive.ObjectIDFromHex(idStr)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
 
 	if err := ctx.ShouldBindJSON(&updatedUser); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid fields"})
 		return
 	}
 
-	user, err := uc.UserUsecase.Update(id, updatedUser)
+	user, err := uc.UserUsecase.Update(idStr, updatedUser)
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -135,33 +113,16 @@ func (uc *UserController) Update(ctx *gin.Context) {
 }
 
 func (uc *UserController) ChangePassword(ctx *gin.Context) {
-	var body map[string]interface{}
+	var passwordInput PasswordInput
 
-	idStr := ctx.Param("id")
-	id, err := primitive.ObjectIDFromHex(idStr)
-	if err != nil {
+	id := ctx.Param("id")
+
+	if err := ctx.ShouldBindJSON(&passwordInput); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if err := ctx.BindJSON(&body); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	prevPassword, ok := body["prev_password"].(string)
-	if !ok {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "previous password missing"})
-		return
-	}
-
-	newPassword, ok := body["new_password"].(string)
-	if !ok {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "new password missing"})
-		return
-	}
-
-	err = uc.UserUsecase.ChangePassword(id, prevPassword, newPassword)
+	err := uc.UserUsecase.ChangePassword(id, passwordInput.PrevPassword, passwordInput.NewPassword)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -170,14 +131,9 @@ func (uc *UserController) ChangePassword(ctx *gin.Context) {
 }
 
 func (uc *UserController) Remove(ctx *gin.Context) {
-	idStr := ctx.Param("id")
-	id, err := primitive.ObjectIDFromHex(idStr)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
+	id := ctx.Param("id")
 
-	err = uc.UserUsecase.Remove(id)
+	err := uc.UserUsecase.Remove(id)
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return

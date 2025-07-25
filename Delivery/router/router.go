@@ -2,15 +2,14 @@ package router
 
 import (
 	"github.com/abeni-al7/task_manager/Delivery/controllers"
-	"github.com/abeni-al7/task_manager/Domain"
-	"github.com/abeni-al7/task_manager/Infrastructure"
-	"github.com/abeni-al7/task_manager/Repositories"
-	"github.com/abeni-al7/task_manager/Usecases"
+	domain "github.com/abeni-al7/task_manager/Domain"
+	infrastructure "github.com/abeni-al7/task_manager/Infrastructure"
+	repositories "github.com/abeni-al7/task_manager/Repositories"
+	usecases "github.com/abeni-al7/task_manager/Usecases"
 	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func Init(db mongo.Database, gin *gin.Engine) *gin.Engine {
+func Init(gin *gin.Engine) *gin.Engine {
 	freeRoutes := gin.Group("")
 	regularRoutes := gin.Group("")
 	adminRoutes := gin.Group("")
@@ -20,38 +19,38 @@ func Init(db mongo.Database, gin *gin.Engine) *gin.Engine {
 	adminRoutes.Use(infrastructure.AuthMiddleware(), infrastructure.IsAdminMiddleware())
 	ownerRoutes.Use(infrastructure.AuthMiddleware(), infrastructure.IsOwnerMiddleware())
 
-	AuthRouter(db, freeRoutes)
-	TaskAccessRouter(db, regularRoutes)
-	TaskManipulationRouter(db, adminRoutes)
-	UserControlRouter(db, adminRoutes)
-	AccountControlRouter(db, ownerRoutes)
+	AuthRouter(freeRoutes)
+	TaskAccessRouter(regularRoutes)
+	TaskManipulationRouter(adminRoutes)
+	UserControlRouter(adminRoutes)
+	AccountControlRouter(ownerRoutes)
 	return gin
 }
 
-func AuthRouter(db mongo.Database, group *gin.RouterGroup) {
-	ur := repositories.NewUserRepository(db, domain.UserCollection)
+func AuthRouter(group *gin.RouterGroup) {
+	ur := repositories.NewUserRepository(domain.UserCollection)
 	uc := &controllers.UserController{
-		UserUsecase: *usecases.NewUserUsecase(*ur),
+		UserUsecase: *usecases.NewUserUsecase(ur, new(infrastructure.Infrastructure)),
 	}
 
 	group.POST("/register", uc.Register)
 	group.POST("/login", uc.Login)
 }
 
-func TaskAccessRouter(db mongo.Database, group *gin.RouterGroup) {
-	tr := repositories.NewTaskRepository(db, domain.TaskCollection)
+func TaskAccessRouter(group *gin.RouterGroup) {
+	tr := repositories.NewTaskRepository(domain.TaskCollection)
 	tc := &controllers.TaskController{
-		TaskUsecase: *usecases.NewTaskUsecase(*tr),
+		TaskUsecase: *usecases.NewTaskUsecase(tr),
 	}
 
 	group.GET("/tasks", tc.FetchAll)
 	group.GET("/tasks/:id", tc.Fetch)
 }
 
-func TaskManipulationRouter(db mongo.Database, group *gin.RouterGroup) {
-	tr := repositories.NewTaskRepository(db, domain.TaskCollection)
+func TaskManipulationRouter(group *gin.RouterGroup) {
+	tr := repositories.NewTaskRepository(domain.TaskCollection)
 	tc := &controllers.TaskController{
-		TaskUsecase: *usecases.NewTaskUsecase(*tr),
+		TaskUsecase: *usecases.NewTaskUsecase(tr),
 	}
 
 	group.PUT("/tasks/:id", tc.Update)
@@ -59,10 +58,10 @@ func TaskManipulationRouter(db mongo.Database, group *gin.RouterGroup) {
 	group.POST("/tasks", tc.Create)
 }
 
-func UserControlRouter(db mongo.Database, group *gin.RouterGroup) {
-	ur := repositories.NewUserRepository(db, domain.UserCollection)
+func UserControlRouter(group *gin.RouterGroup) {
+	ur := repositories.NewUserRepository(domain.UserCollection)
 	uc := &controllers.UserController{
-		UserUsecase: *usecases.NewUserUsecase(*ur),
+		UserUsecase: *usecases.NewUserUsecase(ur, new(infrastructure.Infrastructure)),
 	}
 
 	group.GET("/users", uc.FetchAll)
@@ -70,10 +69,10 @@ func UserControlRouter(db mongo.Database, group *gin.RouterGroup) {
 	group.DELETE("/users/:id", uc.Remove)
 }
 
-func AccountControlRouter(db mongo.Database, group *gin.RouterGroup) {
-	ur := repositories.NewUserRepository(db, domain.UserCollection)
+func AccountControlRouter(group *gin.RouterGroup) {
+	ur := repositories.NewUserRepository(domain.UserCollection)
 	uc := &controllers.UserController{
-		UserUsecase: *usecases.NewUserUsecase(*ur),
+		UserUsecase: *usecases.NewUserUsecase(ur, new(infrastructure.Infrastructure)),
 	}
 
 	group.GET("/users/:id", uc.Fetch)
