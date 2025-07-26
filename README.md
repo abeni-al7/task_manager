@@ -1,0 +1,2 @@
+# Task Manager
+This is an API built for managing tasks built with Go. It has a secure token based authentication system and the code follows clean architecture principles. It can be used as a template to build a project following clean architecture principles, for the integration of basic task management functionalities into your apps and for learning. You can find the detailed explanation for the endpoints and the system architecture as well as how to set it up on your machine, visit [API Documentation](docs/api_documentation.md).
