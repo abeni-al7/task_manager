@@ -4,8 +4,8 @@ import (
 	"errors"
 	"time"
 
-	domain "github.com/abeni-al7/task_manager/Domain"
-	usecases "github.com/abeni-al7/task_manager/Usecases/interfaces"
+	"github.com/abeni-al7/task_manager/Domain"
+	"github.com/abeni-al7/task_manager/Usecases/interfaces"
 )
 
 type UserUsecase struct {

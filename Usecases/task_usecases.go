@@ -4,19 +4,9 @@ import (
 	"errors"
 	"time"
 
-	domain "github.com/abeni-al7/task_manager/Domain"
-	usecases "github.com/abeni-al7/task_manager/Usecases/interfaces"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"github.com/abeni-al7/task_manager/Domain"
+	"github.com/abeni-al7/task_manager/Usecases/interfaces"
 )
-
-
-type TaskUsecaseInterface interface {
-	Create(task *domain.Task) (domain.Task, error)
-	FetchAll() ([]domain.Task, error)
-	Fetch(id primitive.ObjectID) (domain.Task, error)
-	Update(id primitive.ObjectID, updatedTask domain.Task) (domain.Task, error)
-	Remove(id primitive.ObjectID) error
-}
 
 type TaskUsecase struct {
 	taskRepo usecases.ITaskRepo
