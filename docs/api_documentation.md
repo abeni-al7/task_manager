@@ -374,6 +374,10 @@ type User struct {
 
 - Repositories: This layer contains the logic for the database interaction this project would have to perform the use cases. It currently supports the mongoDB database and it can be swapped with any other database if needed.
 
-- Usecases: This layer contains the core business logic of the application. This layer is agnostic towards the framework used or the database utilized. It supports data validation and communicates with the repositories layer for database functionality.
+- Usecases: This layer contains the core business logic of the application. This layer is agnostic towards the framework used or the database utilized. It supports data validation and communicates with an interface that is implemented by the repositories layer for database functionality. It also depends on an interface that is implemented by the infrastructure layer for security features.
 
 This approach was chosen for structuring this project because it allows flexibility in responding to changes in requirement or tools that could arise later during the maintenance of the project.
+
+## Testing
+The project contains mocks that implement the repository interfaces so that usecases can be tested separately.
+The project contains unittests for usecases covering happy paths as well as error paths. The tests utilize their separate suits to avoid repetition when initializing the mock repository and the usecase to be tested.
