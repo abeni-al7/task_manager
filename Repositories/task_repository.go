@@ -5,7 +5,7 @@ import (
 	"errors"
 	"time"
 
-	domain "github.com/abeni-al7/task_manager/Domain"
+	"github.com/abeni-al7/task_manager/Domain"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"

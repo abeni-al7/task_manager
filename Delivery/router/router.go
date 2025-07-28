@@ -2,10 +2,9 @@ package router
 
 import (
 	"github.com/abeni-al7/task_manager/Delivery/controllers"
-	domain "github.com/abeni-al7/task_manager/Domain"
-	infrastructure "github.com/abeni-al7/task_manager/Infrastructure"
-	repositories "github.com/abeni-al7/task_manager/Repositories"
-	usecases "github.com/abeni-al7/task_manager/Usecases"
+	"github.com/abeni-al7/task_manager/Infrastructure"
+	"github.com/abeni-al7/task_manager/Repositories"
+	"github.com/abeni-al7/task_manager/Usecases"
 	"github.com/gin-gonic/gin"
 )
 
@@ -28,7 +27,7 @@ func Init(gin *gin.Engine) *gin.Engine {
 }
 
 func AuthRouter(group *gin.RouterGroup) {
-	ur := repositories.NewUserRepository(domain.UserCollection)
+	ur := repositories.NewUserRepository(repositories.UserCollection)
 	uc := &controllers.UserController{
 		UserUsecase: *usecases.NewUserUsecase(ur, new(infrastructure.Infrastructure)),
 	}
@@ -38,7 +37,7 @@ func AuthRouter(group *gin.RouterGroup) {
 }
 
 func TaskAccessRouter(group *gin.RouterGroup) {
-	tr := repositories.NewTaskRepository(domain.TaskCollection)
+	tr := repositories.NewTaskRepository(repositories.TaskCollection)
 	tc := &controllers.TaskController{
 		TaskUsecase: *usecases.NewTaskUsecase(tr),
 	}
@@ -48,7 +47,7 @@ func TaskAccessRouter(group *gin.RouterGroup) {
 }
 
 func TaskManipulationRouter(group *gin.RouterGroup) {
-	tr := repositories.NewTaskRepository(domain.TaskCollection)
+	tr := repositories.NewTaskRepository(repositories.TaskCollection)
 	tc := &controllers.TaskController{
 		TaskUsecase: *usecases.NewTaskUsecase(tr),
 	}
@@ -59,7 +58,7 @@ func TaskManipulationRouter(group *gin.RouterGroup) {
 }
 
 func UserControlRouter(group *gin.RouterGroup) {
-	ur := repositories.NewUserRepository(domain.UserCollection)
+	ur := repositories.NewUserRepository(repositories.UserCollection)
 	uc := &controllers.UserController{
 		UserUsecase: *usecases.NewUserUsecase(ur, new(infrastructure.Infrastructure)),
 	}
@@ -70,7 +69,7 @@ func UserControlRouter(group *gin.RouterGroup) {
 }
 
 func AccountControlRouter(group *gin.RouterGroup) {
-	ur := repositories.NewUserRepository(domain.UserCollection)
+	ur := repositories.NewUserRepository(repositories.UserCollection)
 	uc := &controllers.UserController{
 		UserUsecase: *usecases.NewUserUsecase(ur, new(infrastructure.Infrastructure)),
 	}
