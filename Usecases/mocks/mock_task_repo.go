@@ -1,7 +1,7 @@
 package mocks
 
 import (
-	domain "github.com/abeni-al7/task_manager/Domain"
+	"github.com/abeni-al7/task_manager/Domain"
 	"github.com/stretchr/testify/mock"
 )
 
